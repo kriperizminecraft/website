@@ -6,7 +6,7 @@
     <title>ɴᴇᴅᴏs1ᴍᴘʟᴇxᴢᴢ</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* Базовые стили */
+    <style>
         * {
             margin: 0;
             padding: 0;
@@ -15,8 +15,8 @@
         }
 
         body {
-            background: linear-gradient(135deg, #1a1a1a, #2d3436);
-            color: #fff;
+            background: #f0f4f8;
+            color: #2d3748;
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -25,61 +25,55 @@
         }
 
         .container {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 2rem;
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 2.5rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(113, 128, 150, 0.1);
             max-width: 600px;
             width: 90%;
-            position: relative;
             transition: transform 0.3s;
-        }
-
-        /* Анимация плавающего контейнера */
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-20px); }
+            border: 1px solid rgba(226, 232, 240, 0.3);
         }
 
         .profile-img {
-            width: 150px;
-            height: 150px;
+            width: 160px;
+            height: 160px;
             border-radius: 50%;
-            margin: 0 auto 1rem;
+            margin: 0 auto 1.5rem;
             display: block;
             object-fit: cover;
-            border: 3px solid #fff;
+            border: 4px solid #e2e8f0;
+            transition: all 0.3s ease;
             cursor: pointer;
-            transition: transform 0.3s, box-shadow 0.3s;
         }
 
         .profile-img:hover {
             transform: scale(1.05);
-            box-shadow: 0 0 25px rgba(255, 255, 255, 0.4);
+            border-color: #4a90e2;
+            box-shadow: 0 0 25px rgba(74, 144, 226, 0.2);
         }
 
         h1 {
             text-align: center;
-            font-size: 2.5rem;
+            font-size: 2.8rem;
             margin-bottom: 0.5rem;
-            background: linear-gradient(45deg, #00ff87, #60efff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: #2d3748;
+            letter-spacing: -1px;
         }
 
         .title {
             text-align: center;
-            font-size: 1.2rem;
-            color: #ccc;
+            font-size: 1.3rem;
+            color: #4a5568;
             margin-bottom: 2rem;
+            position: relative;
         }
 
         .divider {
-            width: 50%;
+            width: 60%;
             height: 2px;
-            background: linear-gradient(90deg, transparent, #fff, transparent);
-            margin: 1rem auto;
+            background: linear-gradient(90deg, transparent, #cbd5e0, transparent);
+            margin: 2rem auto;
         }
 
         .contacts {
@@ -88,56 +82,63 @@
         }
 
         .contact-item {
-            margin: 1rem 0;
+            margin: 1.2rem 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 12px;
+            color: #4a5568;
+            font-size: 1.1rem;
         }
 
         .social-links {
             display: flex;
             justify-content: center;
-            gap: 1.5rem;
+            gap: 2rem;
             margin-top: 2rem;
         }
 
         .social-links a {
-            color: #fff;
+            color: #718096;
             font-size: 1.8rem;
-            transition: transform 0.3s, color 0.3s;
+            transition: all 0.3s ease;
         }
 
         .social-links a:hover {
-            transform: translateY(-5px);
-            color: #00ff87;
+            color: #4a90e2;
+            transform: translateY(-3px);
         }
 
         .btn {
             display: inline-block;
-            padding: 12px 30px;
-            background: linear-gradient(45deg, #00ff87, #60efff);
-            color: #1a1a1a !important;
-            border-radius: 30px;
+            padding: 12px 35px;
+            background: #4a90e2;
+            color: white !important;
+            border-radius: 8px;
             text-decoration: none;
-            font-weight: bold;
-            margin-top: 1rem;
-            transition: transform 0.3s, box-shadow 0.3s;
+            font-weight: 600;
+            margin-top: 1.5rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(74, 144, 226, 0.3);
         }
 
         .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0, 255, 135, 0.4);
+            transform: translateY(-2px);
+            background: #357abd;
+            box-shadow: 0 6px 20px rgba(74, 144, 226, 0.4);
         }
 
-        /* Адаптивность */
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
         @media (max-width: 480px) {
             .container {
-                padding: 1.5rem;
+                padding: 1.8rem;
             }
-            
             h1 {
-                font-size: 2rem;
+                font-size: 2.2rem;
             }
         }
     </style>
