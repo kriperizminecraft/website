@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ɴᴇᴅᴏs1ᴍᴘʟᴇxᴢᴢ</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
+<style>
+    /* Базовые стили */
         * {
             margin: 0;
             padding: 0;
@@ -14,8 +15,8 @@
         }
 
         body {
-            background: #f0f4f8;
-            color: #2d3748;
+            background: linear-gradient(135deg, #4a5568, #2d3748);
+            color: #e2e8f0;
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -24,102 +25,98 @@
         }
 
         .container {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 2.5rem;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(113, 128, 150, 0.1);
+            background: rgba(45, 55, 72, 0.9);
+            padding: 2rem;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
             max-width: 600px;
             width: 90%;
+            position: relative;
             transition: transform 0.3s;
-            border: 1px solid rgba(226, 232, 240, 0.3);
+            border: 1px solid #718096;
         }
 
         .profile-img {
-            width: 160px;
-            height: 160px;
+            width: 150px;
+            height: 150px;
             border-radius: 50%;
-            margin: 0 auto 1.5rem;
+            margin: 0 auto 1rem;
             display: block;
             object-fit: cover;
-            border: 4px solid #e2e8f0;
-            transition: all 0.3s ease;
+            border: 3px solid #a0aec0;
             cursor: pointer;
-        }
-
-        .profile-img:hover {
-            transform: scale(1.05);
-            border-color: #4a90e2;
-            box-shadow: 0 0 25px rgba(74, 144, 226, 0.2);
+            transition: transform 0.3s, box-shadow 0.3s;
         }
 
         h1 {
             text-align: center;
-            font-size: 2.8rem;
+            font-size: 2.5rem;
             margin-bottom: 0.5rem;
-            color: #2d3748;
-            letter-spacing: -1px;
+            background: linear-gradient(45deg, #63b3ed, #4299e1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .title {
             text-align: center;
-            font-size: 1.3rem;
-            color: #4a5568;
+            font-size: 1.2rem;
+            color: #cbd5e0;
             margin-bottom: 2rem;
-            position: relative;
         }
 
         .divider {
-            width: 60%;
+            width: 50%;
             height: 2px;
-            background: linear-gradient(90deg, transparent, #cbd5e0, transparent);
-            margin: 2rem auto;
+            background: linear-gradient(90deg, transparent, #718096, transparent);
+            margin: 1rem auto;
         }
-
+        
         .contacts {
             margin: 2rem 0;
             text-align: center;
         }
 
         .contact-item {
-            margin: 1.2rem 0;
+            margin: 1rem 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 12px;
-            color: #4a5568;
-            font-size: 1.1rem;
+            gap: 10px;
+            color: #cbd5e0;
         }
 
         .social-links {
             display: flex;
             justify-content: center;
-            gap: 2rem;
+            gap: 1.5rem;
             margin-top: 2rem;
         }
 
         .social-links a {
-            color: #718096;
+            color: #a0aec0;
             font-size: 1.8rem;
-            transition: all 0.3s ease;
+            transition: transform 0.3s, color 0.3s;
         }
 
         .social-links a:hover {
-            color: #4a90e2;
-            transform: translateY(-3px);
+            transform: translateY(-5px);
+            color: #63b3ed;
         }
 
         .btn {
             display: inline-block;
-            padding: 12px 35px;
-            background: #4a90e2;
-            color: white !important;
-            border-radius: 8px;
+            padding: 12px 30px;
+            background: linear-gradient(45deg, #63b3ed, #4299e1);
+            color: #1a202c !important;
+            border-radius: 30px;
             text-decoration: none;
-            font-weight: 600;
-            margin-top: 1.5rem;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(74, 144, 226, 0.3);
+            font-weight: bold;
+            margin-top: 1rem;
+            transition: transform 0.3s, box-shadow 0.3s;
         }
+
+
 
         .btn:hover {
             transform: translateY(-2px);
