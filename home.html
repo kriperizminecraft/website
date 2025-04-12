@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ɴᴇᴅᴏs1ᴍᴘʟᴇxᴢᴢ</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-<style>
-    /* Базовые стили */
+    <style>
         * {
             margin: 0;
             padding: 0;
@@ -15,8 +14,8 @@
         }
 
         body {
-            background: linear-gradient(135deg, #4a5568, #2d3748);
-            color: #e2e8f0;
+            background: linear-gradient(135deg, #1a1a1a, #000000);
+            color: #ffffff;
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -25,16 +24,21 @@
         }
 
         .container {
-            background: rgba(45, 55, 72, 0.9);
+            background: rgba(0, 0, 0, 0.7);
             padding: 2rem;
             border-radius: 20px;
             backdrop-filter: blur(10px);
-            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 0 30px rgba(248, 1, 1, 0.2);
             max-width: 600px;
             width: 90%;
             position: relative;
             transition: transform 0.3s;
-            border: 1px solid #718096;
+            border: 1px solid #F80101;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
         }
 
         .profile-img {
@@ -44,16 +48,21 @@
             margin: 0 auto 1rem;
             display: block;
             object-fit: cover;
-            border: 3px solid #a0aec0;
+            border: 3px solid #F80101;
             cursor: pointer;
             transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .profile-img:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px rgba(248, 1, 1, 0.4);
         }
 
         h1 {
             text-align: center;
             font-size: 2.5rem;
             margin-bottom: 0.5rem;
-            background: linear-gradient(45deg, #63b3ed, #4299e1);
+            background: linear-gradient(45deg, #F80101, #d00000);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
@@ -61,17 +70,17 @@
         .title {
             text-align: center;
             font-size: 1.2rem;
-            color: #cbd5e0;
+            color: #aaaaaa;
             margin-bottom: 2rem;
         }
 
         .divider {
             width: 50%;
             height: 2px;
-            background: linear-gradient(90deg, transparent, #718096, transparent);
+            background: linear-gradient(90deg, transparent, #F80101, transparent);
             margin: 1rem auto;
         }
-        
+
         .contacts {
             margin: 2rem 0;
             text-align: center;
@@ -83,7 +92,7 @@
             align-items: center;
             justify-content: center;
             gap: 10px;
-            color: #cbd5e0;
+            color: #cccccc;
         }
 
         .social-links {
@@ -94,21 +103,21 @@
         }
 
         .social-links a {
-            color: #a0aec0;
+            color: #F80101;
             font-size: 1.8rem;
             transition: transform 0.3s, color 0.3s;
         }
 
         .social-links a:hover {
             transform: translateY(-5px);
-            color: #63b3ed;
+            color: #ffffff;
         }
 
         .btn {
             display: inline-block;
             padding: 12px 30px;
-            background: linear-gradient(45deg, #63b3ed, #4299e1);
-            color: #1a202c !important;
+            background: linear-gradient(45deg, #F80101, #b30101);
+            color: #ffffff !important;
             border-radius: 30px;
             text-decoration: none;
             font-weight: bold;
@@ -116,25 +125,18 @@
             transition: transform 0.3s, box-shadow 0.3s;
         }
 
-
-
         .btn:hover {
-            transform: translateY(-2px);
-            background: #357abd;
-            box-shadow: 0 6px 20px rgba(74, 144, 226, 0.4);
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(248, 1, 1, 0.4);
         }
 
         @media (max-width: 480px) {
             .container {
-                padding: 1.8rem;
+                padding: 1.5rem;
             }
+            
             h1 {
-                font-size: 2.2rem;
+                font-size: 2rem;
             }
         }
     </style>
@@ -153,7 +155,6 @@
             </div>
             <div class="contact-item">
                 <i class="fas fa-phone"></i>
-                +7 (999) 123-45-67
             </div>
         </div>
 
@@ -169,9 +170,8 @@
     </div>
 
     <script>
-        // Анимация печатной машинки
         const typewriter = document.getElementById('typewriter');
-        const text = 'Тик токер ';
+        const text = 'Тик токер';
         let index = 0;
 
         function typeText() {
@@ -182,13 +182,11 @@
             }
         }
 
-        // Слушатель для анимации при загрузке
         window.addEventListener('DOMContentLoaded', () => {
             typeText();
             container.style.animation = 'float 4s ease-in-out infinite';
         });
 
-        // Интерактивность для изображения
         const profileImg = document.getElementById('profileImg');
         profileImg.addEventListener('click', () => {
             profileImg.style.transform = `rotate(${Math.random() * 360}deg) scale(1.1)`;
@@ -197,24 +195,21 @@
             }, 1000);
         });
 
-        // Эффект при наведении на социальные иконки
         document.querySelectorAll('.social-links a').forEach(link => {
             link.addEventListener('mouseover', () => {
                 link.style.color = `hsl(${Math.random() * 360}, 70%, 60%)`;
             });
             
             link.addEventListener('mouseout', () => {
-                link.style.color = '#fff';
+                link.style.color = '#F80101';
             });
         });
 
-        // Обработчик кнопки
         document.getElementById('contactBtn').addEventListener('click', (e) => {
             e.preventDefault();
             alert('Свяжитесь со мной через email или социальные сети!');
         });
 
-        // Параллакс эффект
         document.addEventListener('mousemove', (e) => {
             const container = document.querySelector('.container');
             const xAxis = (window.innerWidth / 2 - e.pageX) / 25;
