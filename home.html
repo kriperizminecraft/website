@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Иван Петров - Веб-разработчик</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Базовые стили */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a1a1a, #2d3436);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 90%;
+            position: relative;
+            transition: transform 0.3s;
+        }
+
+        /* Анимация плавающего контейнера */
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .profile-img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            display: block;
+            object-fit: cover;
+            border: 3px solid #fff;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .profile-img:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.4);
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(45deg, #00ff87, #60efff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .title {
+            text-align: center;
+            font-size: 1.2rem;
+            color: #ccc;
+            margin-bottom: 2rem;
+        }
+
+        .divider {
+            width: 50%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #fff, transparent);
+            margin: 1rem auto;
+        }
+
+        .contacts {
+            margin: 2rem 0;
+            text-align: center;
+        }
+
+        .contact-item {
+            margin: 1rem 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .social-links a {
+            color: #fff;
+            font-size: 1.8rem;
+            transition: transform 0.3s, color 0.3s;
+        }
+
+        .social-links a:hover {
+            transform: translateY(-5px);
+            color: #00ff87;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(45deg, #00ff87, #60efff);
+            color: #1a1a1a !important;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 1rem;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 255, 135, 0.4);
+        }
+
+        /* Адаптивность */
+        @media (max-width: 480px) {
+            .container {
+                padding: 1.5rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="https://via.placeholder.com/150" alt="Фото профиля" class="profile-img" id="profileImg">
+        <h1>Иван Петров</h1>
+        <div class="title" id="typewriter">Веб-разработчик</div>
+        <div class="divider"></div>
+
+        <div class="contacts">
+            <div class="contact-item">
+                <i class="fas fa-envelope"></i>
+                ivan@example.com
+            </div>
+            <div class="contact-item">
+                <i class="fas fa-phone"></i>
+                +7 (999) 123-45-67
+            </div>
+        </div>
+
+        <div class="social-links">
+            <a href="#" target="_blank"><i class="fab fa-github"></i></a>
+            <a href="#" target="_blank"><i class="fab fa-linkedin"></i></a>
+            <a href="#" target="_blank"><i class="fab fa-telegram"></i></a>
+        </div>
+
+        <center>
+            <a href="#contact" class="btn" id="contactBtn">Связаться со мной</a>
+        </center>
+    </div>
+
+    <script>
+        // Анимация печатной машинки
+        const typewriter = document.getElementById('typewriter');
+        const text = 'Fullstack разработчик | JavaScript экспертиза | UI/UX дизайн';
+        let index = 0;
+
+        function typeText() {
+            if (index < text.length) {
+                typewriter.innerHTML += text.charAt(index);
+                index++;
+                setTimeout(typeText, 50);
+            }
+        }
+
+        // Слушатель для анимации при загрузке
+        window.addEventListener('DOMContentLoaded', () => {
+            typeText();
+            container.style.animation = 'float 4s ease-in-out infinite';
+        });
+
+        // Интерактивность для изображения
+        const profileImg = document.getElementById('profileImg');
+        profileImg.addEventListener('click', () => {
+            profileImg.style.transform = `rotate(${Math.random() * 360}deg) scale(1.1)`;
+            setTimeout(() => {
+                profileImg.style.transform = 'rotate(0deg) scale(1)';
+            }, 1000);
+        });
+
+        // Эффект при наведении на социальные иконки
+        document.querySelectorAll('.social-links a').forEach(link => {
+            link.addEventListener('mouseover', () => {
+                link.style.color = `hsl(${Math.random() * 360}, 70%, 60%)`;
+            });
+            
+            link.addEventListener('mouseout', () => {
+                link.style.color = '#fff';
+            });
+        });
+
+        // Обработчик кнопки
+        document.getElementById('contactBtn').addEventListener('click', (e) => {
+            e.preventDefault();
+            alert('Свяжитесь со мной через email или социальные сети!');
+        });
+
+        // Параллакс эффект
+        document.addEventListener('mousemove', (e) => {
+            const container = document.querySelector('.container');
+            const xAxis = (window.innerWidth / 2 - e.pageX) / 25;
+            const yAxis = (window.innerHeight / 2 - e.pageY) / 25;
+            container.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
+        });
+    </script>
+</body>
+</html>
