@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ɴᴇᴅᴏs1ᴍᴘʟᴇxᴢᴢ - Персональная страница">
     <title>ɴᴇᴅᴏs1ᴍᴘʟᴇxᴢᴢ</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         body {
@@ -21,6 +22,8 @@
             justify-content: center;
             align-items: center;
             overflow-x: hidden;
+            margin: 0;
+            padding: 20px;
         }
 
         .container {
@@ -28,12 +31,14 @@
             padding: 2rem;
             border-radius: 20px;
             backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             box-shadow: 0 0 30px rgba(248, 1, 1, 0.2);
             max-width: 600px;
             width: 90%;
             position: relative;
-            transition: transform 0.3s;
+            transition: transform 0.3s ease;
             border: 1px solid #F80101;
+            animation: float 4s ease-in-out infinite;
         }
 
         @keyframes float {
@@ -51,6 +56,8 @@
             border: 3px solid #F80101;
             cursor: pointer;
             transition: transform 0.3s, box-shadow 0.3s;
+            will-change: transform;
+            background-color: #1a1a1a;
         }
 
         .profile-img:hover {
@@ -64,7 +71,9 @@
             margin-bottom: 0.5rem;
             background: linear-gradient(45deg, #F80101, #d00000);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
+            font-weight: bold;
         }
 
         .title {
@@ -72,6 +81,7 @@
             font-size: 1.2rem;
             color: #aaaaaa;
             margin-bottom: 2rem;
+            min-height: 1.5em;
         }
 
         .divider {
@@ -93,6 +103,11 @@
             justify-content: center;
             gap: 10px;
             color: #cccccc;
+            transition: color 0.3s;
+        }
+
+        .contact-item:hover {
+            color: #F80101;
         }
 
         .social-links {
@@ -106,6 +121,7 @@
             color: #F80101;
             font-size: 1.8rem;
             transition: transform 0.3s, color 0.3s;
+            text-decoration: none;
         }
 
         .social-links a:hover {
@@ -117,12 +133,14 @@
             display: inline-block;
             padding: 12px 30px;
             background: linear-gradient(45deg, #F80101, #b30101);
-            color: #ffffff !important;
+            color: #ffffff;
             border-radius: 30px;
             text-decoration: none;
             font-weight: bold;
             margin-top: 1rem;
             transition: transform 0.3s, box-shadow 0.3s;
+            border: none;
+            cursor: pointer;
         }
 
         .btn:hover {
@@ -138,12 +156,29 @@
             h1 {
                 font-size: 2rem;
             }
+
+            .profile-img {
+                width: 120px;
+                height: 120px;
+            }
+        }
+
+        @media (max-width: 320px) {
+            .profile-img {
+                width: 100px;
+                height: 100px;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <img src="https://imgur.com/a/olh0uAy" alt="Фото профиля" class="profile-img" id="profileImg">
+        <!-- Замените ссылку ниже на вашу ссылку с Imgur -->
+        <img src="https://imgur.com/a/olh0uAy" alt="ɴᴇᴅᴏs1ᴍᴘʟᴇxᴢᴢ" class="profile-img" id="profileImg">
         <h1>ɴᴇᴅᴏs1ᴍᴘʟᴇxᴢᴢ</h1>
         <div class="title" id="typewriter"></div>
         <div class="divider"></div>
@@ -151,21 +186,18 @@
         <div class="contacts">
             <div class="contact-item">
                 <i class="fas fa-envelope"></i>
-                g621vwb@gmail.com
-            </div>
-            <div class="contact-item">
-                <i class="fas fa-phone"></i>
+                <a href="mailto:g621vwb@gmail.com" style="color: inherit; text-decoration: none;">g621vwb@gmail.com</a>
             </div>
         </div>
 
-    <div class="social-links">
-        <a href="#" target="_blank"><i class="fab fa-github"></i></a>
-        <a href="#" target="_blank"><i class="fab fa-tiktok"></i></a>
-        <a href="#" target="_blank"><i class="fab fa-telegram"></i></a>
-    </div>
+        <div class="social-links">
+            <a href="https://github.com/kriperizminecraft" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i></a>
+            <a href="https://www.tiktok.com/@nedos1mplexzz" target="_blank" rel="noopener noreferrer"><i class="fab fa-tiktok"></i></a>
+            <a href="https://t.me/nedos1mplexzz" target="_blank" rel="noopener noreferrer"><i class="fab fa-telegram"></i></a>
+        </div>
 
         <center>
-            <a href="#contact" class="btn" id="contactBtn">Связаться со мной</a>
+            <button class="btn" id="contactBtn">Связаться со мной</button>
         </center>
     </div>
 
@@ -182,16 +214,20 @@
             }
         }
 
-        window.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', () => {
             typeText();
-            container.style.animation = 'float 4s ease-in-out infinite';
         });
 
         const profileImg = document.getElementById('profileImg');
+        let isAnimating = false;
+
         profileImg.addEventListener('click', () => {
+            if (isAnimating) return;
+            isAnimating = true;
             profileImg.style.transform = `rotate(${Math.random() * 360}deg) scale(1.1)`;
             setTimeout(() => {
                 profileImg.style.transform = 'rotate(0deg) scale(1)';
+                isAnimating = false;
             }, 1000);
         });
 
@@ -205,17 +241,31 @@
             });
         });
 
-        document.getElementById('contactBtn').addEventListener('click', (e) => {
-            e.preventDefault();
-            alert('Свяжитесь со мной через email или социальные сети!');
+        document.getElementById('contactBtn').addEventListener('click', () => {
+            const message = 'Свяжитесь со мной через email или социальные сети!';
+            alert(message);
         });
 
+        let timeout;
         document.addEventListener('mousemove', (e) => {
             const container = document.querySelector('.container');
+            if (!container) return;
+
+            clearTimeout(timeout);
+            
             const xAxis = (window.innerWidth / 2 - e.pageX) / 25;
             const yAxis = (window.innerHeight / 2 - e.pageY) / 25;
+            
             container.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
+            
+            timeout = setTimeout(() => {
+                container.style.transform = 'rotateY(0deg) rotateX(0deg)';
+            }, 500);
         });
+
+        // Предзагрузка изображения
+        const img = new Image();
+        img.src = document.getElementById('profileImg').src;
     </script>
 </body>
 </html>
