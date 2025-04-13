@@ -1,99 +1,120 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ɴᴇᴅᴏs1ᴍᴘʟᴇxᴢᴢ | Tik Toker</title>
+    <meta name="description" content="ɴᴇᴅᴏs1ᴍᴘʟᴇxᴢᴢ - креативный контент-мейкер и TikTok эксперт">
+    <meta property="og:image" content="https://i.imgur.com/olh0uAy.png">
+    <title>ɴᴇᴅᴏs1ᴍᴘʟᴇxᴢᴢ | Digital Creator</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
         :root {
-            --primary-color: #ff0055;
-            --secondary-color: #00ff88;
-            --background-dark: #0a0a0a;
-            --text-light: #ffffff;
-            --text-dark: #333333;
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --primary: #ff0055;
+            --secondary: #00ff88;
+            --background: #0a0a0a;
+            --surface: #1a1a1a;
+            --text: #ffffff;
+            --transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            --gradient: linear-gradient(135deg, var(--primary), var(--secondary));
+            --font-heading: 'Poppins', system-ui, -apple-system, sans-serif;
+            --font-body: 'Inter', system-ui, -apple-system, sans-serif;
         }
 
+        /* Base styles */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            background: var(--background-dark);
-            color: var(--text-light);
+            background: var(--background);
+            color: var(--text);
+            font-family: var(--font-body);
+            line-height: 1.6;
             min-height: 100vh;
             overflow-x: hidden;
         }
 
+        /* Noise texture with animation */
         .noise {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            inset: 0;
             pointer-events: none;
-            opacity: 0.05;
+            opacity: 0.03;
             z-index: 1;
-            background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAABmJLR0QA/wD/AP+gvaeTAAACuUlEQVRoge2ZTW8TQRCGn9m1E4PtOI7TNGkKVEJIHOAA4sCBQ4/8Xn4AAnEBCYlDK4FE+SgNaWmS2olj767Nrj3DDgKhJrtjFYvE+8zO7M7O+9p5Z2eN4ODg4ODg8H9CmNZwIhpODYRjQnBXQgDQEoVAoRUXhSYrBBVA6LrjqjO1nm+a4QEI2UE51wvSWYTrQHcj44A6igwaPzQstm6lzsTr+PHji0xXMg1JxJLThuweBDM9kJ1A9gEtQWsQQmAYBqZpolQdhGB3d5f9/X0ABMpUEDUU+TXF7up6bbFVGXXvf8mRRCw5bWrPU+AuYAKg6zo+n4+uri78fj8ej4dgMEgwGCQQCNDR0UF7ezuGYVCpVCiXy+zu7qKUolgsUigUyOfz5HI5crkcxWKRSqWCUBxKQQp4nl6vzZkWER+OPxRC3JRSEggEiEQiRKNR+vr6iEajhMNhQqEQXV1ddHZ2YprmsfG01hQKBXK5HNlslmw2SyaTYXt7m+3tbXZ2dtBaI6F4pgy9EC/Xnx0rEYnb84NScwcI+f1+hoaGGB4eZmRkhMHBQSKRCH6/H13Xf8v/QqFAOp0mnU6TSqVIJpNsbm6Sz+fRWueV0tcS69VXxxJJxOxJLcRLKWUgHA4zOjrK2NgY4+PjDA0NEQgEWh5fKcXW1hbr6+usra2xurrK5uYmpVJJSMX9xHp1pimRJ3Z8RqB/CiHo7u5mYmKCyclJJiYm6O/vx+PxnPoHK6XI5/Osrq6yvLzM0tISqVQKpZQQ8DyxVr3XlEh8NFYAvNbaHBgY4NLcHFeuXMHr9Z66gD9RLpdZWFhgfn6excVFyuWyB3ibWK1GmxJJxGJ3BfLVwMAA165d4/Lly7S1tbVE1FHs7e3x7t07Xr9+TSaTQQi2hK5G/pUIwPexWFRr/bC3t5dr169z4cKFlosB8Pl8TE1NMTMzQzQaRSmVllpfbFqEg4ODg4ODg8PZ4CewZ3qlNhQwOgAAAABJRU5ErkJggg==');
+            background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAABmJLR0QA/wD/AP+gvaeTAAACuUlEQVRoge2ZTW8TQRCGn9m1E4PtOI7TNGkKVEJIHOAA4sCBQ4/8Xn4AAnEBCYlDK4FE+SgNaWmS2olj767Nrj3DDgKhJrtjFYvE+8zO7M7O+9p5Z2eN4ODg4ODg8H9CmNZwIhpODYRjQnBXQgDQEoVAoRUXhSYrBBVA6LrjqjO1nm+a4QEI2UE51wvSWYTrQHcj44A6igwaPzQstm6lzsTr+PHji0xXMg1JxJLThuweBDM9kJ1A9gEtQWsQQmAYBqZpolQdhGB3d5f9/X0ABMpUEDUU+TXF7up6bbFVGXXvf8mRRCw5bWrPU+AuYAKg6zo+n4+uri78fj8ej4dgMEgwGCQQCNDR0UF7ezs+n49KpUK5XGZ3dxelFIVCgXw+Ty6XI5vNks1myWQyZLNZisUilUoFoTiUghTwPL1emzMtIj4cfyiEuCmlJBAIEIlEiEaj9PX1EY1GCYfDhEIhurq66OzsxDTNY+NprSkUCuRyObLZLNlslkwmQzqdZnt7m+3tbXZ2dtBaI6F4pgy9EC/Xnx0rEYnb84NScwcI+f1+hoaGGB4eZmRkhMHBQSKRCH6/H13Xf8v/QqFAOp0mnU6TSqVIJpNsbm5SLBZRSqWV0tcS69VXxxJJxOxJLcRLKWUgHA4zOjrK2NgY4+PjDA0NEQgEWB5fKcXW1hbr6+usra2xurrK5uYmpVJJSMX9xHp1pimRJ3Z8RqB/CiHo7u5mYmKCyclJJiYm6O/vx+PxnPoHK6XI5/Osrq6yvLzM0tISqVQKpZQQ8DyxVr3XlEh8NFYAvNbaHBgY4NLcHFeuXMHr9Z66gD9RLpdZWFhgfn6excVFyuWyB3ibWK1GmxJJxGJ3BfLVwMAA165d4/Lly7S1tbVE1FHs7e3x7t07Xr9+TSaTQQi2hK5G/pUIwPexWFRr/bC3t5dr169z4cKFlosB8Pl8TE1NMTMzQzQaRSmVllpfbFqEg4ODg4ODg8PZ4CewZ3qlNhQwOgAAAABJRU5ErkJggg==');
+            animation: noise 1s steps(2) infinite;
         }
 
+        @keyframes noise {
+            0% { transform: translate(0,0) }
+            100% { transform: translate(-100%,-100%) }
+        }
+
+        /* Gradient background with parallax */
         .gradient-bg {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at top right, 
-                rgba(255, 0, 85, 0.1) 0%, 
-                rgba(0, 255, 136, 0.1) 100%);
+            inset: 0;
+            background: radial-gradient(circle at 50% 50%, 
+                rgba(255, 0, 85, 0.15) 0%, 
+                rgba(0, 255, 136, 0.15) 100%);
             z-index: 0;
+            transition: background 0.5s ease-out;
         }
 
+        /* Main container */
         .container {
-            max-width: 1200px;
+            max-width: 1440px;
             margin: 0 auto;
             padding: 2rem;
             position: relative;
             z-index: 2;
         }
 
+        /* Header with glassmorphism effect */
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 2rem 0;
+            padding: 1.5rem 0;
             margin-bottom: 4rem;
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .logo {
-            font-size: 1.5rem;
-            font-weight: bold;
-            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            font: 600 1.75rem var(--font-heading);
+            background: var(--gradient);
             -webkit-background-clip: text;
             background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: transparent;
             cursor: pointer;
             transition: var(--transition);
         }
 
         .logo:hover {
-            transform: scale(1.05);
+            transform: skew(-5deg);
+            opacity: 0.9;
         }
 
+        /* Navigation with hover effects */
         .nav-links {
             display: flex;
-            gap: 2rem;
+            gap: 2.5rem;
         }
 
         .nav-link {
-            color: var(--text-light);
+            color: var(--text);
             text-decoration: none;
             position: relative;
             padding: 0.5rem 0;
+            font-weight: 500;
             transition: var(--transition);
         }
 
@@ -104,7 +125,7 @@
             left: 0;
             width: 0;
             height: 2px;
-            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            background: var(--gradient);
             transition: var(--transition);
         }
 
@@ -112,191 +133,241 @@
             width: 100%;
         }
 
+        /* Hero section with 3D effect */
         .hero {
-            display: flex;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             align-items: center;
-            justify-content: space-between;
-            margin: 4rem 0;
-            gap: 2rem;
+            gap: 4rem;
+            margin: 6rem 0;
+            min-height: 80vh;
         }
 
         .hero-content {
-            flex: 1;
-        }
-
-        .hero-image {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .profile-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 2rem;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: var(--transition);
-            transform: perspective(1000px) rotateY(0deg);
-            transform-style: preserve-3d;
-        }
-
-        .profile-card:hover {
-            transform: perspective(1000px) rotateY(5deg);
-        }
-
-        .profile-img {
-            width: 200px;
-            height: 200px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid transparent;
-            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color)) border-box;
-            -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
-            -webkit-mask-composite: destination-out;
-            mask-composite: exclude;
-            transition: var(--transition);
-        }
-
-        .profile-img:hover {
-            transform: scale(1.05) rotate(5deg);
+            position: relative;
+            z-index: 3;
         }
 
         .title {
-            font-size: 3rem;
-            font-weight: bold;
-            margin-bottom: 1rem;
-            line-height: 1.2;
+            font: 600 4rem/1.1 var(--font-heading);
+            margin-bottom: 1.5rem;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 4px 30px rgba(255, 0, 85, 0.2);
         }
 
         .subtitle {
-            font-size: 1.2rem;
-            color: rgba(255, 255, 255, 0.7);
-            margin-bottom: 2rem;
+            font-size: 1.25rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 2.5rem;
+            max-width: 600px;
         }
 
+        /* Interactive profile card */
+        .profile-card {
+            position: relative;
+            perspective: 2000px;
+            transform-style: preserve-3d;
+            width: min(100%, 400px);
+            margin: 0 auto;
+        }
+
+        .profile-img {
+            width: 100%;
+            height: auto;
+            border-radius: 20px;
+            object-fit: cover;
+            aspect-ratio: 1/1;
+            transform: translateZ(30px);
+            border: 3px solid transparent;
+            background: 
+                linear-gradient(var(--background), var(--background)) padding-box,
+                var(--gradient) border-box;
+            transition: var(--transition);
+        }
+
+        .profile-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: var(--gradient);
+            filter: blur(50px);
+            opacity: 0.2;
+            z-index: -1;
+            transition: var(--transition);
+        }
+
+        /* CTA buttons */
         .cta-buttons {
             display: flex;
-            gap: 1rem;
-            margin-top: 2rem;
+            gap: 1.5rem;
+            margin: 3rem 0;
         }
 
         .btn {
             padding: 1rem 2rem;
             border-radius: 50px;
             border: none;
-            font-weight: bold;
+            font: 500 1rem var(--font-body);
             cursor: pointer;
             transition: var(--transition);
             text-decoration: none;
             display: inline-flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.75rem;
+            transform-style: preserve-3d;
+            position: relative;
+            overflow: hidden;
         }
 
         .btn-primary {
-            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
-            color: var(--text-light);
+            background: var(--gradient);
+            color: var(--text);
         }
 
         .btn-secondary {
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--text-light);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
         }
 
+        /* Social links with micro-interactions */
         .social-links {
             display: flex;
-            gap: 1rem;
-            margin-top: 2rem;
+            gap: 1.5rem;
+            margin-top: 3rem;
         }
 
         .social-link {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1);
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--text-light);
-            text-decoration: none;
+            color: var(--text);
             transition: var(--transition);
-            font-size: 1.2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .social-link::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: var(--gradient);
+            opacity: 0;
+            transition: var(--transition);
         }
 
         .social-link:hover {
-            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
             transform: translateY(-3px);
         }
 
+        .social-link:hover::before {
+            opacity: 0.2;
+        }
+
+        /* Skills grid with hover effects */
         .skills {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 2rem;
-            margin-top: 4rem;
+            margin: 6rem 0;
         }
 
         .skill-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 1.5rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .skill-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--gradient);
+            transform: scaleX(0);
             transition: var(--transition);
         }
 
         .skill-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .skill-card:hover::after {
+            transform: scaleX(1);
         }
 
         .skill-icon {
-            font-size: 2rem;
-            margin-bottom: 1rem;
-            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            background: var(--gradient);
             -webkit-background-clip: text;
             background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: transparent;
         }
 
-        @media (max-width: 768px) {
+        /* Responsive design */
+        @media (max-width: 1024px) {
             .hero {
-                flex-direction: column-reverse;
+                grid-template-columns: 1fr;
                 text-align: center;
+                gap: 4rem;
+                margin: 4rem 0;
             }
 
-            .nav-links {
-                display: none;
-            }
-
-            .title {
-                font-size: 2rem;
-            }
-
-            .cta-buttons {
-                justify-content: center;
-            }
-
+            .cta-buttons,
             .social-links {
                 justify-content: center;
             }
+
+            .profile-card {
+                width: min(100%, 300px);
+            }
         }
 
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+
+            .nav-links {
+                gap: 1.5rem;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .title {
+                font-size: 2.5rem;
+            }
+        }
+
+        /* Animations */
         @keyframes float {
             0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
+            50% { transform: translateY(-15px); }
         }
 
         .floating {
-            animation: float 3s ease-in-out infinite;
+            animation: float 4s ease-in-out infinite;
         }
     </style>
 </head>
@@ -310,123 +381,126 @@
             <nav class="nav-links">
                 <a href="#" class="nav-link">Главная</a>
                 <a href="#" class="nav-link">Проекты</a>
-                <a href="#" class="nav-link">Обо мне</a>
+                <a href="#" class="nav-link">Контент</a>
                 <a href="#" class="nav-link">Контакты</a>
             </nav>
         </header>
 
         <section class="hero">
             <div class="hero-content">
-                <h1 class="title">Привет, я<br>ɴᴇᴅᴏs1ᴍᴘʟᴇxᴢᴢ</h1>
-                <p class="subtitle">Креативный контент мейкер и тиктокер</p>
+                <h1 class="title">Цифровое творчество<br>нового уровня</h1>
+                <p class="subtitle">Создаю виральный контент для TikTok с использованием передовых технологий и креативных решений</p>
+                
                 <div class="cta-buttons">
-                    <a href="#" class="btn btn-primary">
-                        <i class="fas fa-envelope"></i>
-                        Связаться
+                    <a href="#contact" class="btn btn-primary">
+                        <i class="fas fa-comment-dots"></i>
+                        Начать проект
                     </a>
-                    <a href="#" class="btn btn-secondary">
-                        <i class="fas fa-folder"></i>
-                        Проекты
+                    <a href="https://github.com/kriperizminecraft" class="btn btn-secondary" target="_blank" rel="noopener">
+                        <i class="fab fa-github"></i>
+                        GitHub
                     </a>
                 </div>
+
                 <div class="social-links">
-                    <a href="https://github.com/kriperizminecraft" class="social-link" target="_blank">
-                        <i class="fab fa-github"></i>
-                    </a>
-                    <a href="#" class="social-link" target="_blank">
+                    <a href="ВАШ_TIKTOK" class="social-link" target="_blank" rel="noopener">
                         <i class="fab fa-tiktok"></i>
                     </a>
-                    <a href="#" class="social-link" target="_blank">
+                    <a href="https://t.me/ВАШ_TELEGRAM" class="social-link" target="_blank" rel="noopener">
                         <i class="fab fa-telegram"></i>
+                    </a>
+                    <a href="#" class="social-link" target="_blank" rel="noopener">
+                        <i class="fab fa-instagram"></i>
                     </a>
                 </div>
             </div>
-            <div class="hero-image">
-                <div class="profile-card floating">
-                    <img src="https://i.imgur.com/olh0uAy.png" alt="Profile" class="profile-img" id="profileImg">
-                </div>
+
+            <div class="profile-card floating">
+                <img src="https://imgur.com/a/cC02WQW" alt="ɴᴇᴅᴏs1ᴍᴘʟᴇxᴢᴢ" class="profile-img">
             </div>
         </section>
 
         <section class="skills">
             <div class="skill-card">
-                <i class="fas fa-code skill-icon"></i>
-                <h3>Разработка</h3>
-                <p>Создание креативных и функциональных веб-приложений</p>
-            </div>
-            <div class="skill-card">
                 <i class="fas fa-video skill-icon"></i>
-                <h3>TikTok</h3>
-                <p>Создание увлекательного контента для социальных сетей</p>
+                <h3>TikTok Production</h3>
+                <p>Полный цикл создания вирального контента: от идеи до продвижения</p>
             </div>
             <div class="skill-card">
-                <i class="fas fa-paint-brush skill-icon"></i>
-                <h3>Дизайн</h3>
-                <p>Разработка уникальных и современных интерфейсов</p>
+                <i class="fas fa-chart-line skill-icon"></i>
+                <h3>SMM Продвижение</h3>
+                <p>Стратегии роста аудитории и повышения вовлеченности</p>
+            </div>
+            <div class="skill-card">
+                <i class="fas fa-code skill-icon"></i>
+                <h3>Веб-Интеграция</h3>
+                <p>Создание интерактивных проектов на стыке контента и технологий</p>
             </div>
         </section>
     </div>
 
-    <script>
-        // 3D Card Effect
+    <script type="module">
+        // Advanced 3D card effect
+        const card = document.querySelector('.profile-card');
+        const calcRotation = (e, element) => {
+            const rect = element.getBoundingClientRect();
+            const centerX = (rect.left + rect.right) / 2;
+            const centerY = (rect.top + rect.bottom) / 2;
+            return {
+                x: (e.clientY - centerY) * -0.02,
+                y: (e.clientX - centerX) * 0.02
+            };
+        };
+
         document.addEventListener('mousemove', (e) => {
-            const cards = document.querySelectorAll('.profile-card');
-            cards.forEach(card => {
-                const rect = card.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-
-                const centerX = rect.width / 2;
-                const centerY = rect.height / 2;
-
-                const rotateX = (y - centerY) / 20;
-                const rotateY = (centerX - x) / 20;
-
-                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-            });
+            const {x, y} = calcRotation(e, card);
+            card.style.transform = `
+                perspective(2000px)
+                rotateX(${x}deg)
+                rotateY(${y}deg)
+                translateZ(30px)
+            `;
         });
 
-        // Reset card rotation when mouse leaves
-        document.addEventListener('mouseleave', () => {
-            const cards = document.querySelectorAll('.profile-card');
-            cards.forEach(card => {
-                card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0)';
-            });
-        });
-
-        // Smooth scroll for navigation
+        // Smooth scroll
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
+            anchor.addEventListener('click', function(e) {
                 e.preventDefault();
-                document.querySelector(this.getAttribute('href')).scrollIntoView({
-                    behavior: 'smooth'
+                document.querySelector(this.getAttribute('href'))?.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
                 });
             });
         });
 
-        // Random color effect for skill cards on hover
-        document.querySelectorAll('.skill-card').forEach(card => {
-            card.addEventListener('mouseover', () => {
-                const randomColor = `hsl(${Math.random() * 360}, 70%, 50%)`;
-                card.querySelector('.skill-icon').style.background = `linear-gradient(45deg, ${randomColor}, var(--secondary-color))`;
-                card.querySelector('.skill-icon').style.webkitBackgroundClip = 'text';
-                card.querySelector('.skill-icon').style.backgroundClip = 'text';
-            });
-
-            card.addEventListener('mouseleave', () => {
-                card.querySelector('.skill-icon').style.background = 'linear-gradient(45deg, var(--primary-color), var(--secondary-color))';
-            });
+        // Dynamic gradient background
+        document.addEventListener('mousemove', ({clientX, clientY}) => {
+            const x = clientX / window.innerWidth * 100;
+            const y = clientY / window.innerHeight * 100;
+            document.documentElement.style.setProperty('--gradient', `
+                linear-gradient(
+                    ${(x + y) * 0.5}deg,
+                    var(--primary) 0%,
+                    var(--secondary) 100%
+                )
+            `);
         });
 
-        // Parallax effect for gradient background
-        document.addEventListener('mousemove', (e) => {
-            const gradient = document.querySelector('.gradient-bg');
-            const x = e.clientX / window.innerWidth;
-            const y = e.clientY / window.innerHeight;
-            
-            gradient.style.background = `radial-gradient(circle at ${x * 100}% ${y * 100}%, 
-                rgba(255, 0, 85, 0.1) 0%, 
-                rgba(0, 255, 136, 0.1) 100%)`;
+        // Intersection Observer for animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if(entry.isIntersecting) {
+                    entry.target.style.opacity = 1;
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, {threshold: 0.1});
+
+        document.querySelectorAll('.skill-card, .hero-content').forEach(el => {
+            el.style.opacity = 0;
+            el.style.transform = 'translateY(20px)';
+            el.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out';
+            observer.observe(el);
         });
     </script>
 </body>
