@@ -3,269 +3,431 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="ɴᴇᴅᴏs1ᴍᴘʟᴇxᴢᴢ - Персональная страница">
-    <title>ɴᴇᴅᴏs1ᴍᴘʟᴇxᴢᴢ</title>
+    <title>ɴᴇᴅᴏs1ᴍᴘʟᴇxᴢᴢ | Tik Toker</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
+        :root {
+            --primary-color: #ff0055;
+            --secondary-color: #00ff88;
+            --background-dark: #0a0a0a;
+            --text-light: #ffffff;
+            --text-dark: #333333;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
         }
 
         body {
-            background: linear-gradient(135deg, #1a1a1a, #000000);
-            color: #ffffff;
+            background: var(--background-dark);
+            color: var(--text-light);
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             overflow-x: hidden;
-            margin: 0;
-            padding: 20px;
+        }
+
+        .noise {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0.05;
+            z-index: 1;
+            background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAABmJLR0QA/wD/AP+gvaeTAAACuUlEQVRoge2ZTW8TQRCGn9m1E4PtOI7TNGkKVEJIHOAA4sCBQ4/8Xn4AAnEBCYlDK4FE+SgNaWmS2olj767Nrj3DDgKhJrtjFYvE+8zO7M7O+9p5Z2eN4ODg4ODg8H9CmNZwIhpODYRjQnBXQgDQEoVAoRUXhSYrBBVA6LrjqjO1nm+a4QEI2UE51wvSWYTrQHcj44A6igwaPzQstm6lzsTr+PHji0xXMg1JxJLThuweBDM9kJ1A9gEtQWsQQmAYBqZpolQdhGB3d5f9/X0ABMpUEDUU+TXF7up6bbFVGXXvf8mRRCw5bWrPU+AuYAKg6zo+n4+uri78fj8ej4dgMEgwGCQQCNDR0UF7ezuGYVCpVCiXy+zu7qKUolgsUigUyOfz5HI5crkcxWKRSqWCUBxKQQp4nl6vzZkWER+OPxRC3JRSEggEiEQiRKNR+vr6iEajhMNhQqEQXV1ddHZ2YprmsfG01hQKBXK5HNlslmw2SyaTYXt7m+3tbXZ2dtBaI6F4pgy9EC/Xnx0rEYnb84NScwcI+f1+hoaGGB4eZmRkhMHBQSKRCH6/H13Xf8v/QqFAOp0mnU6TSqVIJpNsbm6Sz+fRWueV0tcS69VXxxJJxOxJLcRLKWUgHA4zOjrK2NgY4+PjDA0NEQgEWh5fKcXW1hbr6+usra2xurrK5uYmpVJJSMX9xHp1pimRJ3Z8RqB/CiHo7u5mYmKCyclJJiYm6O/vx+PxnPoHK6XI5/Osrq6yvLzM0tISqVQKpZQQ8DyxVr3XlEh8NFYAvNbaHBgY4NLcHFeuXMHr9Z66gD9RLpdZWFhgfn6excVFyuWyB3ibWK1GmxJJxGJ3BfLVwMAA165d4/Lly7S1tbVE1FHs7e3x7t07Xr9+TSaTQQi2hK5G/pUIwPexWFRr/bC3t5dr169z4cKFlosB8Pl8TE1NMTMzQzQaRSmVllpfbFqEg4ODg4ODg8PZ4CewZ3qlNhQwOgAAAABJRU5ErkJggg==');
+        }
+
+        .gradient-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at top right, 
+                rgba(255, 0, 85, 0.1) 0%, 
+                rgba(0, 255, 136, 0.1) 100%);
+            z-index: 0;
         }
 
         .container {
-            background: rgba(0, 0, 0, 0.7);
+            max-width: 1200px;
+            margin: 0 auto;
             padding: 2rem;
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            box-shadow: 0 0 30px rgba(248, 1, 1, 0.2);
-            max-width: 600px;
-            width: 90%;
             position: relative;
-            transition: transform 0.3s ease;
-            border: 1px solid #F80101;
-            animation: float 4s ease-in-out infinite;
+            z-index: 2;
         }
 
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-20px); }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 2rem 0;
+            margin-bottom: 4rem;
         }
 
-        .profile-img {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            margin: 0 auto 1rem;
-            display: block;
-            object-fit: cover;
-            border: 3px solid #F80101;
-            cursor: pointer;
-            transition: transform 0.3s, box-shadow 0.3s;
-            will-change: transform;
-            background-color: #1a1a1a;
-        }
-
-        .profile-img:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 25px rgba(248, 1, 1, 0.4);
-        }
-
-        h1 {
-            text-align: center;
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
-            background: linear-gradient(45deg, #F80101, #d00000);
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
-            font-weight: bold;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-link {
+            color: var(--text-light);
+            text-decoration: none;
+            position: relative;
+            padding: 0.5rem 0;
+            transition: var(--transition);
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            transition: var(--transition);
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .hero {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 4rem 0;
+            gap: 2rem;
+        }
+
+        .hero-content {
+            flex: 1;
+        }
+
+        .hero-image {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .profile-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: var(--transition);
+            transform: perspective(1000px) rotateY(0deg);
+            transform-style: preserve-3d;
+        }
+
+        .profile-card:hover {
+            transform: perspective(1000px) rotateY(5deg);
+        }
+
+        .profile-img {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid transparent;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color)) border-box;
+            -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: destination-out;
+            mask-composite: exclude;
+            transition: var(--transition);
+        }
+
+        .profile-img:hover {
+            transform: scale(1.05) rotate(5deg);
         }
 
         .title {
-            text-align: center;
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        .subtitle {
             font-size: 1.2rem;
-            color: #aaaaaa;
+            color: rgba(255, 255, 255, 0.7);
             margin-bottom: 2rem;
-            min-height: 1.5em;
         }
 
-        .divider {
-            width: 50%;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, #F80101, transparent);
-            margin: 1rem auto;
-        }
-
-        .contacts {
-            margin: 2rem 0;
-            text-align: center;
-        }
-
-        .contact-item {
-            margin: 1rem 0;
+        .cta-buttons {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            color: #cccccc;
-            transition: color 0.3s;
-        }
-
-        .contact-item:hover {
-            color: #F80101;
-        }
-
-        .social-links {
-            display: flex;
-            justify-content: center;
-            gap: 1.5rem;
+            gap: 1rem;
             margin-top: 2rem;
         }
 
-        .social-links a {
-            color: #F80101;
-            font-size: 1.8rem;
-            transition: transform 0.3s, color 0.3s;
-            text-decoration: none;
-        }
-
-        .social-links a:hover {
-            transform: translateY(-5px);
-            color: #ffffff;
-        }
-
         .btn {
-            display: inline-block;
-            padding: 12px 30px;
-            background: linear-gradient(45deg, #F80101, #b30101);
-            color: #ffffff;
-            border-radius: 30px;
-            text-decoration: none;
-            font-weight: bold;
-            margin-top: 1rem;
-            transition: transform 0.3s, box-shadow 0.3s;
+            padding: 1rem 2rem;
+            border-radius: 50px;
             border: none;
+            font-weight: bold;
             cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: var(--text-light);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .btn:hover {
             transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(248, 1, 1, 0.4);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
         }
 
-        @media (max-width: 480px) {
-            .container {
-                padding: 1.5rem;
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .social-link {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-light);
+            text-decoration: none;
+            transition: var(--transition);
+            font-size: 1.2rem;
+        }
+
+        .social-link:hover {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            transform: translateY(-3px);
+        }
+
+        .skills {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 4rem;
+        }
+
+        .skill-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: var(--transition);
+        }
+
+        .skill-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .skill-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        @media (max-width: 768px) {
+            .hero {
+                flex-direction: column-reverse;
+                text-align: center;
             }
-            
-            h1 {
+
+            .nav-links {
+                display: none;
+            }
+
+            .title {
                 font-size: 2rem;
             }
 
-            .profile-img {
-                width: 120px;
-                height: 120px;
+            .cta-buttons {
+                justify-content: center;
+            }
+
+            .social-links {
+                justify-content: center;
             }
         }
 
-        @media (max-width: 320px) {
-            .profile-img {
-                width: 100px;
-                height: 100px;
-            }
-            
-            h1 {
-                font-size: 1.5rem;
-            }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .floating {
+            animation: float 3s ease-in-out infinite;
         }
     </style>
 </head>
 <body>
+    <div class="noise"></div>
+    <div class="gradient-bg"></div>
+    
     <div class="container">
-        <!-- Замените ссылку ниже на вашу ссылку с Imgur -->
-        <img src="https://imgur.com/a/olh0uAy" alt="ɴᴇᴅᴏs1ᴍᴘʟᴇxᴢᴢ" class="profile-img" id="profileImg">
-        <h1>ɴᴇᴅᴏs1ᴍᴘʟᴇxᴢᴢ</h1>
-        <div class="title" id="typewriter"></div>
-        <div class="divider"></div>
+        <header class="header">
+            <div class="logo">ɴᴇᴅᴏs1ᴍᴘʟᴇxᴢᴢ</div>
+            <nav class="nav-links">
+                <a href="#" class="nav-link">Главная</a>
+                <a href="#" class="nav-link">Проекты</a>
+                <a href="#" class="nav-link">Обо мне</a>
+                <a href="#" class="nav-link">Контакты</a>
+            </nav>
+        </header>
 
-        <div class="contacts">
-            <div class="contact-item">
-                <i class="fas fa-envelope"></i>
-                <a href="mailto:g621vwb@gmail.com" style="color: inherit; text-decoration: none;">g621vwb@gmail.com</a>
+        <section class="hero">
+            <div class="hero-content">
+                <h1 class="title">Привет, я<br>ɴᴇᴅᴏs1ᴍᴘʟᴇxᴢᴢ</h1>
+                <p class="subtitle">Креативный контент мейкер и тиктокер</p>
+                <div class="cta-buttons">
+                    <a href="#" class="btn btn-primary">
+                        <i class="fas fa-envelope"></i>
+                        Связаться
+                    </a>
+                    <a href="#" class="btn btn-secondary">
+                        <i class="fas fa-folder"></i>
+                        Проекты
+                    </a>
+                </div>
+                <div class="social-links">
+                    <a href="https://github.com/kriperizminecraft" class="social-link" target="_blank">
+                        <i class="fab fa-github"></i>
+                    </a>
+                    <a href="#" class="social-link" target="_blank">
+                        <i class="fab fa-tiktok"></i>
+                    </a>
+                    <a href="#" class="social-link" target="_blank">
+                        <i class="fab fa-telegram"></i>
+                    </a>
+                </div>
             </div>
-        </div>
+            <div class="hero-image">
+                <div class="profile-card floating">
+                    <img src="https://imgur.com/gallery/olh0uAy" alt="Profile" class="profile-img" id="profileImg">
+                </div>
+            </div>
+        </section>
 
-        <div class="social-links">
-            <a href="https://github.com/kriperizminecraft" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i></a>
-            <a href="https://www.tiktok.com/@nedos1mplexzz" target="_blank" rel="noopener noreferrer"><i class="fab fa-tiktok"></i></a>
-            <a href="https://t.me/nedos1mplexzz" target="_blank" rel="noopener noreferrer"><i class="fab fa-telegram"></i></a>
-        </div>
-
-        <center>
-            <button class="btn" id="contactBtn">Связаться со мной</button>
-        </center>
+        <section class="skills">
+            <div class="skill-card">
+                <i class="fas fa-code skill-icon"></i>
+                <h3>Разработка</h3>
+                <p>Создание креативных и функциональных веб-приложений</p>
+            </div>
+            <div class="skill-card">
+                <i class="fas fa-video skill-icon"></i>
+                <h3>TikTok</h3>
+                <p>Создание увлекательного контента для социальных сетей</p>
+            </div>
+            <div class="skill-card">
+                <i class="fas fa-paint-brush skill-icon"></i>
+                <h3>Дизайн</h3>
+                <p>Разработка уникальных и современных интерфейсов</p>
+            </div>
+        </section>
     </div>
 
     <script>
-        const typewriter = document.getElementById('typewriter');
-        const text = 'Тик токер';
-        let index = 0;
-
-        function typeText() {
-            if (index < text.length) {
-                typewriter.innerHTML += text.charAt(index);
-                index++;
-                setTimeout(typeText, 50);
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            typeText();
-        });
-
-        const profileImg = document.getElementById('profileImg');
-        let isAnimating = false;
-
-        profileImg.addEventListener('click', () => {
-            if (isAnimating) return;
-            isAnimating = true;
-            profileImg.style.transform = `rotate(${Math.random() * 360}deg) scale(1.1)`;
-            setTimeout(() => {
-                profileImg.style.transform = 'rotate(0deg) scale(1)';
-                isAnimating = false;
-            }, 1000);
-        });
-
-        document.querySelectorAll('.social-links a').forEach(link => {
-            link.addEventListener('mouseover', () => {
-                link.style.color = `hsl(${Math.random() * 360}, 70%, 60%)`;
-            });
-            
-            link.addEventListener('mouseout', () => {
-                link.style.color = '#F80101';
-            });
-        });
-
-        document.getElementById('contactBtn').addEventListener('click', () => {
-            const message = 'Свяжитесь со мной через email или социальные сети!';
-            alert(message);
-        });
-
-        let timeout;
+        // 3D Card Effect
         document.addEventListener('mousemove', (e) => {
-            const container = document.querySelector('.container');
-            if (!container) return;
+            const cards = document.querySelectorAll('.profile-card');
+            cards.forEach(card => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
 
-            clearTimeout(timeout);
-            
-            const xAxis = (window.innerWidth / 2 - e.pageX) / 25;
-            const yAxis = (window.innerHeight / 2 - e.pageY) / 25;
-            
-            container.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
-            
-            timeout = setTimeout(() => {
-                container.style.transform = 'rotateY(0deg) rotateX(0deg)';
-            }, 500);
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+
+                const rotateX = (y - centerY) / 20;
+                const rotateY = (centerX - x) / 20;
+
+                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+            });
         });
 
-        // Предзагрузка изображения
-        const img = new Image();
-        img.src = document.getElementById('profileImg').src;
+        // Reset card rotation when mouse leaves
+        document.addEventListener('mouseleave', () => {
+            const cards = document.querySelectorAll('.profile-card');
+            cards.forEach(card => {
+                card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0)';
+            });
+        });
+
+        // Smooth scroll for navigation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Random color effect for skill cards on hover
+        document.querySelectorAll('.skill-card').forEach(card => {
+            card.addEventListener('mouseover', () => {
+                const randomColor = `hsl(${Math.random() * 360}, 70%, 50%)`;
+                card.querySelector('.skill-icon').style.background = `linear-gradient(45deg, ${randomColor}, var(--secondary-color))`;
+                card.querySelector('.skill-icon').style.webkitBackgroundClip = 'text';
+                card.querySelector('.skill-icon').style.backgroundClip = 'text';
+            });
+
+            card.addEventListener('mouseleave', () => {
+                card.querySelector('.skill-icon').style.background = 'linear-gradient(45deg, var(--primary-color), var(--secondary-color))';
+            });
+        });
+
+        // Parallax effect for gradient background
+        document.addEventListener('mousemove', (e) => {
+            const gradient = document.querySelector('.gradient-bg');
+            const x = e.clientX / window.innerWidth;
+            const y = e.clientY / window.innerHeight;
+            
+            gradient.style.background = `radial-gradient(circle at ${x * 100}% ${y * 100}%, 
+                rgba(255, 0, 85, 0.1) 0%, 
+                rgba(0, 255, 136, 0.1) 100%)`;
+        });
     </script>
 </body>
 </html>
