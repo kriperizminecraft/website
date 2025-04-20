@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <title>Регистрация</title>
+    <!-- Firebase SDK (версия 8.10.1 для UMD-совместимости) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e1e2f, #2a2a4a);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .register-container {
+            max-width: 400px;
+            width: 90%;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .title {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            color: #fff;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .register-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        label {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: white;
+            font-size: 1rem;
+            transition: border-color 0.3s, background 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary, #ff6b6b);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        input[type="checkbox"] {
+            width: 1rem;
+            height: 1rem;
+        }
+
+        .btn {
+            padding: 1rem;
+            background: var(--primary, #ff6b6b);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.3s;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark, #e55a5a);
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .link {
+            text-align: center;
+            margin-top: 1rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+            text-decoration: none;
+        }
+
+        .link:hover {
+            color: #ff6b6b;
+            cursor: pointer;
+        }
+
+        .error-message {
+            color: var(--primary, #ff6b6b);
+            display: none;
+            margin-top: 1rem;
+            text-align: center;
+            font-size: 0.9rem;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .password-toggle {
+            position: relative;
+        }
+
+        .toggle-icon {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 480px) {
+            .register-container {
+                padding: 1.5rem;
+            }
+
+            .title {
+                font-size: 1.5rem;
+            }
+
+            input, .btn {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <section class="register-container">
+        <h2 class="title">Регистрация</h2>
+        <div class="error-message" id="errorMessage"></div>
+        <form class="register-form" id="registerForm">
+            <div class="form-group">
+                <label for="username">Логин</label>
+                <input type="text" id="username" required placeholder="Введите логин">
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" required placeholder="Введите email">
+            </div>
+            <div class="form-group password-toggle">
+                <label for="password">Пароль</label>
+                <input type="password" id="password" required placeholder="Введите пароль">
+                <span class="toggle-icon" onclick="togglePassword('password')">👁️</span>
+            </div>
+            <div class="form-group password-toggle">
+                <label for="confirmPassword">Подтвердите пароль</label>
+                <input type="password" id="confirmPassword" required placeholder="Подтвердите пароль">
+                <span class="toggle-icon" onclick="togglePassword('confirmPassword')">👁️</span>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="isEmailPrivate">
+                <label for="isEmailPrivate">Скрыть email</label>
+            </div>
+            <button type="submit" class="btn">Зарегистрироваться</button>
+        </form>
+        <a class="link" href="index.html">Уже есть аккаунт? Войдите</a>
+    </section>
+
+    <script>
+        // Функция для отображения ошибки на странице
+        function showError(message) {
+            const error = document.getElementById('errorMessage');
+            error.textContent = message;
+            error.style.display = 'block';
+            setTimeout(() => error.style.display = 'none', 3000);
+        }
+
+        // Проверка загрузки Firebase
+        if (typeof firebase === 'undefined') {
+            showError('Не удалось загрузить Firebase. Проверьте подключение к интернету.');
+            throw new Error('Firebase not loaded');
+        }
+
+        // Инициализация Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyA3jMYOt2eGZXJy8SIqWbIG5kZwsR27KwY",
+            authDomain: "website-c1e4c.firebaseapp.com",
+            projectId: "website-c1e4c",
+            storageBucket: "website-c1e4c.firebasestorage.app",
+            messagingSenderId: "838275352771",
+            appId: "1:838275352771:web:afe4b0608ac7ddc581ba76",
+            measurementId: "G-G5MBZG0Z82"
+        };
+
+        let db;
+        try {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.firestore();
+        } catch (error) {
+            showError('Ошибка инициализации Firebase: ' + error.message);
+            throw error;
+        }
+
+        let users = [];
+
+        // Загрузка пользователей из Firestore
+        async function loadUsers() {
+            if (!db) {
+                showError('База данных не инициализирована.');
+                throw new Error('Firestore not initialized');
+            }
+            try {
+                const usersSnapshot = await db.collection('users').get();
+                users = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                return users;
+            } catch (error) {
+                console.error('Ошибка загрузки пользователей:', error.message);
+                showError('Ошибка загрузки данных пользователей.');
+                return [];
+            }
+        }
+
+        // Сохранение пользователей в Firestore
+        async function saveUser(user) {
+            if (!db) {
+                showError('База данных не инициализирована.');
+                throw new Error('Firestore not initialized');
+            }
+            try {
+                const userRef = db.collection('users').doc();
+                user.id = userRef.id;
+                await userRef.set(user);
+                users.push(user);
+            } catch (error) {
+                console.error('Ошибка сохранения пользователя:', error.message);
+                showError('Ошибка сохранения данных.');
+                throw error;
+            }
+        }
+
+        // Показать/Скрыть пароль
+        function togglePassword(fieldId) {
+            const passwordInput = document.getElementById(fieldId);
+            const icon = passwordInput.nextElementSibling;
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.textContent = '🙈';
+            } else {
+                passwordInput.type = 'password';
+                icon.textContent = '👁️';
+            }
+        }
+
+        // Обработка отправки формы регистрации
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            // Загружаем пользователей перед проверкой уникальности
+            await loadUsers();
+
+            const username = document.getElementById('username').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const confirmPassword = document.getElementById('confirmPassword').value.trim();
+            const isEmailPrivate = document.getElementById('isEmailPrivate').checked;
+
+            // Валидация полей
+            if (!username || !email || !password || !confirmPassword) {
+                showError('Все поля обязательны для заполнения');
+                return;
+            }
+
+            // Проверка формата email
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showError('Некорректный формат email');
+                return;
+            }
+
+            // Проверка длины пароля
+            if (password.length < 6) {
+                showError('Пароль должен содержать минимум 6 символов');
+                return;
+            }
+
+            // Проверка совпадения паролей
+            if (password !== confirmPassword) {
+                showError('Пароли не совпадают');
+                return;
+            }
+
+            // Проверка уникальности username
+            if (users.some(u => u.username === username)) {
+                showError('Пользователь с таким логином уже существует');
+                return;
+            }
+
+            // Проверка уникальности email
+            if (users.some(u => u.email === email)) {
+                showError('Email уже используется');
+                return;
+            }
+
+            // Создание нового пользователя
+            const newUser = {
+                username: username,
+                email: email,
+                password: password,
+                role: 'user', // По умолчанию обычный пользователь
+                avatar: '', // Аватар пока пустой
+                isEmailPrivate: isEmailPrivate,
+                isBlocked: false
+            };
+
+            try {
+                await saveUser(newUser);
+                showError('Регистрация успешна! Перенаправляем на страницу входа...');
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 2000);
+            } catch (error) {
+                showError('Ошибка при регистрации. Попробуйте снова.');
+            }
+        });
+
+        // Проверка, если пользователь уже авторизован
+        document.addEventListener('DOMContentLoaded', async function() {
+            const userData = localStorage.getItem('currentUser');
+            if (userData) {
+                const currentUser = JSON.parse(userData);
+                await loadUsers();
+                const userExists = users.some(u => u.username === currentUser.username);
+                if (userExists) {
+                    window.location.href = 'profile.html';
+                } else {
+                    localStorage.removeItem('currentUser');
+                }
+            }
+        });
+    </script>
+</body>
+</html>
