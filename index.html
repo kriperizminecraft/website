@@ -64,7 +64,7 @@
         }
 
         input {
-            padding: 1rem       padding: 1rem;
+            padding: 1rem;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 10px;
@@ -212,7 +212,7 @@
     <!-- Модальное окно для восстановления пароля -->
     <div class="modal" id="forgotPasswordModal">
         <div class="modal-content">
-            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <span class="close-btn" onclick="closeModal()">×</span>
             <h3>Восстановление пароля</h3>
             <div class="error-message" id="modalErrorMessage"></div>
             <div class="form-group" id="emailStep">
@@ -238,7 +238,7 @@
     <script>
         // Инициализация EmailJS
         (function() {
-            emailjs.init("fOU587HClWretq8_w"); // Замените на ваш EmailJS User ID
+            emailjs.init("fOU587HClWretq8_w");
         })();
 
         // Функция для отображения ошибки на странице
@@ -352,6 +352,11 @@
 
         // Отправка кода подтверждения на email
         async function sendResetCode() {
+            // Убедимся, что пользователи загружены
+            if (users.length === 0) {
+                await loadUsers();
+            }
+
             const email = document.getElementById('emailInput').value.trim();
             if (!email) {
                 showError('Введите email', true);
@@ -448,12 +453,14 @@
             window.location.href = 'profile.html';
         });
 
-        // Проверка, если пользователь уже авторизован
+        // Проверка, если пользователь уже авторизован, и загрузка пользователей
         document.addEventListener('DOMContentLoaded', async function() {
+            // Загружаем пользователей сразу при загрузке страницы
+            await loadUsers();
+
             const userData = localStorage.getItem('currentUser');
             if (userData) {
                 currentUser = JSON.parse(userData);
-                await loadUsers();
                 const userExists = users.some(u => u.username === currentUser.username);
                 if (userExists) {
                     window.location.href = 'profile.html';
