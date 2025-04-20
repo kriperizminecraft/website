@@ -363,6 +363,13 @@
                 return;
             }
 
+            // Дополнительная проверка формата email
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showError('Некорректный формат email', true);
+                return;
+            }
+
             const user = users.find(u => u.email === email);
             if (!user) {
                 showError('Пользователь с таким email не найден', true);
@@ -373,19 +380,29 @@
             resetCode = Math.floor(100000 + Math.random() * 900000).toString();
             resetEmail = email;
 
+            // Логирование для отладки
+            console.log('Отправка email:', {
+                service_id: 'service_w3a4hvv',
+                template_id: 'template_bhp4ane',
+                to_email: email,
+                reset_code: resetCode,
+                user_name: user.username
+            });
+
             // Отправка email через EmailJS
             try {
-                await emailjs.send('service_w3a4hvv', 'template_bhp4ane', {
+                const response = await emailjs.send('service_w3a4hvv', 'template_bhp4ane', {
                     to_email: email,
                     reset_code: resetCode,
                     user_name: user.username
                 });
+                console.log('Email отправлен:', response);
                 showError('Код отправлен на ваш email', true);
                 document.getElementById('emailStep').style.display = 'none';
                 document.getElementById('codeStep').style.display = 'block';
             } catch (error) {
                 console.error('Ошибка отправки email:', error);
-                showError('Ошибка отправки кода', true);
+                showError(`Ошибка отправки кода: ${error.text || error.message}`, true);
             }
         }
 
