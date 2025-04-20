@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <title>Поиск пользователей</title>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e1e2f, #2a2a4a);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .search-container {
+            max-width: 500px;
+            width: 90%;
+            margin: 4rem auto;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .title {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            color: #fff;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .search-form {
+            margin-bottom: 1rem;
+        }
+
+        .search-form input {
+            display: block;
+            margin: 0.5rem 0;
+            width: 100%;
+            padding: 0.5rem;
+            border-radius: 5px;
+            border: none;
+        }
+
+        .btn {
+            padding: 1rem;
+            background: var(--primary, #ff6b6b);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.3s;
+            display: block;
+            margin: 0.5rem auto;
+            width: 100%;
+            max-width: 200px;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark, #e55a5a);
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .search-results {
+            margin-top: 1rem;
+        }
+
+        .search-result-item {
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+        }
+
+        .profile-preview {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            display: block;
+            margin: 0 auto 1rem;
+        }
+
+        .avatar-placeholder {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.8rem;
+        }
+
+        .profile-data {
+            text-align: center;
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .messages-list {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .message-item {
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+        }
+
+        .message-form {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            display: none;
+        }
+
+        .message-form textarea {
+            display: block;
+            margin: 0.5rem 0;
+            width: 100%;
+            padding: 0.5rem;
+            border-radius: 5px;
+            border: none;
+        }
+
+        @media (max-width: 480px) {
+            .search-container {
+                padding: 1.5rem;
+                margin: 2rem auto;
+            }
+
+            .title {
+                font-size: 1.5rem;
+            }
+
+            .btn {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <section class="search-container">
+        <h2 class="title">Поиск пользователей</h2>
+        <div class="search-form">
+            <input type="text" id="searchInput" placeholder="Поиск по нику">
+            <button class="btn" onclick="searchUsers()">Поиск</button>
+        </div>
+        <div class="search-results" id="searchResults"></div>
+        <div class="profile-preview" id="profilePreview" style="display: none;">
+            <div id="avatarContainer"></div>
+            <p class="profile-data" id="profileData"></p>
+            <button class="btn" id="messageBtn" style="display: none;">Написать сообщение</button>
+            <div class="message-form" id="messageForm">
+                <textarea id="messageText" placeholder="Введите сообщение" rows="3"></textarea>
+                <button class="btn" onclick="sendMessage()">Отправить</button>
+                <button class="btn" onclick="cancelMessage()">Отмена</button>
+            </div>
+            <div class="messages-list" id="messagesList"></div>
+        </div>
+        <button class="btn" onclick="window.location.href='profile.html'">Назад к профилю</button>
+        <button class="btn" id="logoutBtn" style="display: none;" onclick="logout()">Выйти</button>
+        <button class="btn" id="loginBtn" style="display: none;" onclick="window.location.href='index.html'">Войти</button>
+    </section>
+
+    <script>
+        // Инициализация Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyA3jMYOt2eGZXJy8SIqWbIG5kZwsR27KwY",
+            authDomain: "website-c1e4c.firebaseapp.com",
+            projectId: "website-c1e4c",
+            storageBucket: "website-c1e4c.firebasestorage.app",
+            messagingSenderId: "838275352771",
+            appId: "1:838275352771:web:afe4b0608ac7ddc581ba76",
+            measurementId: "G-G5MBZG0Z82"
+        };
+
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        let currentUser = null;
+        let users = [];
+        let selectedUser = null;
+
+        // Загрузка пользователей из Firestore
+        async function loadUsers() {
+            try {
+                const usersSnapshot = await db.collection('users').get();
+                users = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                return users;
+            } catch (error) {
+                console.error('Ошибка загрузки пользователей:', error.message);
+                alert('Ошибка загрузки данных пользователей. Создаем пустой список.');
+                return [];
+            }
+        }
+
+        // Загрузка сообщений из Firestore
+        async function loadMessages() {
+            try {
+                const messagesSnapshot = await db.collection('messages').get();
+                return messagesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            } catch (error) {
+                console.error('Ошибка загрузки сообщений:', error.message);
+                return [];
+            }
+        }
+
+        // Сохранение сообщений в Firestore
+        async function saveMessages(messages) {
+            try {
+                const batch = db.batch();
+                messages.forEach(msg => {
+                    const msgRef = msg.id ? db.collection('messages').doc(msg.id) : db.collection('messages').doc();
+                    if (!msg.id) msg.id = msgRef.id; // Присваиваем ID, если его нет
+                    batch.set(msgRef, msg);
+                });
+                await batch.commit();
+            } catch (error) {
+                console.error('Ошибка сохранения сообщений:', error.message);
+                alert('Ошибка сохранения сообщений.');
+            }
+        }
+
+        // Получение сообщений между двумя пользователями
+        async function getMessagesBetween(sender, receiver) {
+            const messages = await loadMessages();
+            return messages.filter(
+                msg => (msg.sender === sender && msg.receiver === receiver) || 
+                       (msg.sender === receiver && msg.receiver === sender)
+            );
+        }
+
+        function searchUsers() {
+            const searchInput = document.getElementById('searchInput').value.toLowerCase();
+            const searchResults = document.getElementById('searchResults');
+            searchResults.innerHTML = '';
+
+            const filteredUsers = users.filter(user => 
+                user.username.toLowerCase().includes(searchInput)
+            );
+
+            if (filteredUsers.length === 0) {
+                searchResults.innerHTML = '<p>Пользователи не найдены</p>';
+                return;
+            }
+
+            filteredUsers.forEach(user => {
+                const resultItem = document.createElement('div');
+                resultItem.className = 'search-result-item';
+                resultItem.textContent = user.username;
+                resultItem.onclick = () => {
+                    renderProfile(user);
+                };
+                searchResults.appendChild(resultItem);
+            });
+        }
+
+        async function renderProfile(user) {
+            selectedUser = user;
+            const profilePreview = document.getElementById('profilePreview');
+            profilePreview.style.display = 'block';
+
+            document.getElementById('profileData').innerHTML = `
+                Логин: <span>${user.username}</span><br>
+                Email: <span>${user.isEmailPrivate ? 'Скрыт' : user.email}</span><br>
+                Роль: <span>${user.role === 'admin' ? 'Администратор' : 'Пользователь'}</span>
+            `;
+            renderAvatar(user);
+
+            // Отображение сообщений (только для авторизованных пользователей)
+            const messagesList = document.getElementById('messagesList');
+            messagesList.innerHTML = '';
+            if (currentUser) {
+                const messages = await getMessagesBetween(currentUser.username, selectedUser.username);
+                messagesList.innerHTML = messages.length === 0 ? '<p>Нет сообщений</p>' : '';
+                messages.forEach(msg => {
+                    const messageItem = document.createElement('div');
+                    messageItem.className = 'message-item';
+                    messageItem.textContent = `${msg.sender} (${new Date(msg.timestamp).toLocaleString()}): ${msg.text}`;
+                    messagesList.appendChild(messageItem);
+                });
+                document.getElementById('messageBtn').style.display = currentUser.username !== selectedUser.username ? 'block' : 'none';
+            } else {
+                messagesList.innerHTML = '<p>Войдите, чтобы видеть сообщения.</p>';
+            }
+        }
+
+        function renderAvatar(user) {
+            const avatarContainer = document.getElementById('avatarContainer');
+            if (avatarContainer) {
+                if (user.avatar) {
+                    avatarContainer.innerHTML = `<img src="${user.avatar}" class="avatar" alt="Аватар">`;
+                } else {
+                    avatarContainer.innerHTML = `<div class="avatar-placeholder">Нет аватара</div>`;
+                }
+            }
+        }
+
+        async function sendMessage() {
+            if (!currentUser) {
+                alert('Войдите, чтобы отправить сообщение.');
+                return;
+            }
+
+            const messageText = document.getElementById('messageText').value.trim();
+            if (!messageText) {
+                alert('Сообщение не может быть пустым.');
+                return;
+            }
+
+            const messages = await loadMessages();
+            const newMessage = {
+                sender: currentUser.username,
+                receiver: selectedUser.username,
+                text: messageText,
+                timestamp: Date.now()
+            };
+            messages.push(newMessage);
+            await saveMessages([newMessage]);
+
+            document.getElementById('messageText').value = '';
+            document.getElementById('messageForm').style.display = 'none';
+            renderProfile(selectedUser);
+        }
+
+        function cancelMessage() {
+            document.getElementById('messageForm').style.display = 'none';
+            document.getElementById('messageText').value = '';
+        }
+
+        function logout() {
+            localStorage.removeItem('currentUser');
+            alert('Вы вышли из системы');
+            window.location.href = 'index.html';
+        }
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            await loadUsers();
+
+            // Проверка текущего пользователя
+            const userData = localStorage.getItem('currentUser');
+            if (userData) {
+                currentUser = JSON.parse(userData);
+                const userExists = users.some(u => u.username === currentUser.username);
+                if (!userExists) {
+                    console.log('Текущий пользователь не найден в списке пользователей');
+                    localStorage.removeItem('currentUser');
+                    currentUser = null;
+                } else {
+                    // Синхронизируем currentUser с данными из Firestore
+                    const updatedUser = users.find(u => u.username === currentUser.username);
+                    if (updatedUser) {
+                        currentUser = updatedUser;
+                        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    }
+                }
+            }
+
+            // Настройка интерфейса
+            if (currentUser) {
+                document.getElementById('logoutBtn').style.display = 'block';
+            } else {
+                document.getElementById('loginBtn').style.display = 'block';
+            }
+
+            // Обработчик для кнопки "Написать сообщение"
+            const messageBtn = document.getElementById('messageBtn');
+            if (messageBtn) {
+                messageBtn.addEventListener('click', () => {
+                    document.getElementById('messageForm').style.display = 'block';
+                });
+            }
+        });
+    </script>
+</body>
+</html>
