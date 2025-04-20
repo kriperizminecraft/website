@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Авторизация</title>
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js"></script>
+    <!-- Firebase SDK (версия 8.10.1 для UMD-совместимости) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <style>
         * {
             margin: 0;
@@ -166,6 +166,7 @@
 <body>
     <section class="auth-container">
         <h2 class="title">Добро пожаловать</h2>
+        <div class="error-message" id="errorMessage"></div>
         <div id="authContent">
             <!-- Контент будет меняться через JS -->
         </div>
@@ -203,7 +204,7 @@
         };
 
         try {
-            const app = firebase.initializeApp(firebaseConfig);
+            firebase.initializeApp(firebaseConfig);
             const db = firebase.firestore();
         } catch (error) {
             showError('Ошибка инициализации Firebase: ' + error.message);
@@ -256,7 +257,6 @@
                                 <input type="email" id="resetEmail" required placeholder="Введите ваш email">
                             </div>
                             <button type="submit" class="btn btn-primary">Получить код</button>
-                            <div class="error-message" id="errorMessage"></div>
                         </form>
                         <div class="auth-links">
                             <a href="#" onclick="renderAuthForm(true)">Вернуться ко входу</a>
@@ -280,7 +280,6 @@
                                 <span class="toggle-icon" onclick="togglePassword('confirmPassword')">👁️</span>
                             </div>
                             <button type="submit" class="btn btn-primary">Сбросить пароль</button>
-                            <div class="error-message" id="errorMessage"></div>
                         </form>
                         <div class="auth-links">
                             <a href="#" onclick="renderAuthForm(true)">Вернуться ко входу</a>
@@ -322,8 +321,6 @@
                         <button type="submit" class="btn btn-primary">
                             ${isLogin ? 'Войти' : 'Зарегистрироваться'}
                         </button>
-                        
-                        <div class="error-message" id="errorMessage"></div>
                     </form>
                     
                     <div class="auth-links">
@@ -353,7 +350,6 @@
             e.preventDefault();
             
             const users = await loadUsers();
-            const errorMessage = document.getElementById('errorMessage');
             
             const getValue = (id) => document.getElementById(id).value.trim();
             
