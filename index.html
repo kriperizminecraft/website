@@ -3,10 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <title>Авторизация</title>
     <!-- Firebase SDK (версия 8.10.1 для UMD-совместимости) -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <!-- EmailJS SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -20,14 +23,14 @@
             color: white;
             min-height: 100vh;
             display: flex;
-            flex-direction: column;
+            justify-content: center;
             align-items: center;
         }
 
         .auth-container {
-            max-width: 500px;
+            max-width: 400px;
             width: 90%;
-            margin: 4rem auto;
+            margin: 2rem auto;
             padding: 2rem;
             background: rgba(255, 255, 255, 0.03);
             border-radius: 20px;
@@ -61,7 +64,7 @@
         }
 
         input {
-            padding: 1rem;
+            padding: 1rem       padding: 1rem;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 10px;
@@ -74,13 +77,6 @@
             outline: none;
             border-color: var(--primary, #ff6b6b);
             background: rgba(255, 255, 255, 0.1);
-        }
-
-        .form-hint {
-            font-size: 0.8rem;
-            color: rgba(255, 255, 255, 0.6);
-            text-align: center;
-            margin-bottom: 1rem;
         }
 
         .btn {
@@ -103,6 +99,19 @@
             transform: translateY(0);
         }
 
+        .link {
+            text-align: center;
+            margin-top: 1rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+            text-decoration: none;
+        }
+
+        .link:hover {
+            color: #ff6b6b;
+            cursor: pointer;
+        }
+
         .error-message {
             color: var(--primary, #ff6b6b);
             display: none;
@@ -115,22 +124,6 @@
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
-        }
-
-        .auth-links {
-            margin-top: 1.5rem;
-            text-align: center;
-            font-size: 0.9rem;
-        }
-
-        .auth-links a {
-            color: var(--primary, #ff6b6b);
-            text-decoration: none;
-            transition: color 0.3s;
-        }
-
-        .auth-links a:hover {
-            color: var(--primary-dark, #e55a5a);
         }
 
         .password-toggle {
@@ -147,10 +140,43 @@
             font-size: 0.9rem;
         }
 
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 2rem;
+            border-radius: 20px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .modal-content h3 {
+            margin-bottom: 1rem;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
         @media (max-width: 480px) {
-            .auth-container {
+            .auth-container, .modal-content {
                 padding: 1.5rem;
-                margin: 2rem auto;
             }
 
             .title {
@@ -165,25 +191,62 @@
 </head>
 <body>
     <section class="auth-container">
-        <h2 class="title">Добро пожаловать</h2>
+        <h2 class="title">Авторизация</h2>
         <div class="error-message" id="errorMessage"></div>
-        <div id="authContent">
-            <!-- Контент будет меняться через JS -->
-        </div>
-        <button class="btn" onclick="window.location.href='search.html'">Поиск пользователей</button>
+        <form class="auth-form" id="authForm">
+            <div class="form-group">
+                <label for="username">Логин</label>
+                <input type="text" id="username" required placeholder="Введите логин">
+            </div>
+            <div class="form-group password-toggle">
+                <label for="password">Пароль</label>
+                <input type="password" id="password" required placeholder="Введите пароль">
+                <span class="toggle-icon" onclick="togglePassword()">👁️</span>
+            </div>
+            <button type="submit" class="btn">Войти</button>
+        </form>
+        <a class="link" onclick="showForgotPasswordModal()">Забыли пароль?</a>
+        <a class="link" href="register.html">Нет аккаунта? Зарегистрируйтесь</a>
     </section>
 
+    <!-- Модальное окно для восстановления пароля -->
+    <div class="modal" id="forgotPasswordModal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <h3>Восстановление пароля</h3>
+            <div class="error-message" id="modalErrorMessage"></div>
+            <div class="form-group" id="emailStep">
+                <label for="emailInput">Email</label>
+                <input type="email" id="emailInput" required placeholder="Введите email">
+                <button class="btn" onclick="sendResetCode()">Отправить код</button>
+            </div>
+            <div class="form-group" id="codeStep" style="display: none;">
+                <label for="codeInput">Код подтверждения</label>
+                <input type="text" id="codeInput" required placeholder="Введите код">
+                <button class="btn" onclick="verifyCode()">Подтвердить</button>
+            </div>
+            <div class="form-group" id="newPasswordStep" style="display: none;">
+                <label for="newPasswordInput">Новый пароль</label>
+                <input type="password" id="newPasswordInput" required placeholder="Введите новый пароль">
+                <label for="confirmPasswordInput">Подтвердите пароль</label>
+                <input type="password" id="confirmPasswordInput" required placeholder="Подтвердите пароль">
+                <button class="btn" onclick="resetPassword()">Сменить пароль</button>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // Инициализация EmailJS
+        (function() {
+            emailjs.init("YOUR_EMAILJS_USER_ID"); // Замените на ваш EmailJS User ID
+        })();
+
         // Функция для отображения ошибки на странице
-        function showError(message) {
-            const error = document.getElementById('errorMessage');
+        function showError(message, isModal = false) {
+            const error = isModal ? document.getElementById('modalErrorMessage') : document.getElementById('errorMessage');
             error.textContent = message;
             error.style.display = 'block';
-            setTimeout(() => {
-                error.style.display = 'none';
-                document.getElementById('authForm')?.reset();
-                document.getElementById('resetPasswordForm')?.reset();
-            }, 3000);
+            setTimeout(() => error.style.display = 'none', 3000);
         }
 
         // Проверка загрузки Firebase
@@ -212,11 +275,10 @@
             throw error;
         }
 
-        // Проверка авторизации
-        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-        if (currentUser) {
-            window.location.href = 'profile.html';
-        }
+        let users = [];
+        let currentUser = null;
+        let resetCode = null;
+        let resetEmail = null;
 
         // Загрузка пользователей из Firestore
         async function loadUsers() {
@@ -226,7 +288,7 @@
             }
             try {
                 const usersSnapshot = await db.collection('users').get();
-                const users = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                users = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 return users;
             } catch (error) {
                 console.error('Ошибка загрузки пользователей:', error.message);
@@ -236,265 +298,170 @@
         }
 
         // Сохранение пользователей в Firestore
-        async function saveUsers(users) {
+        async function saveUsers(usersToSave) {
             if (!db) {
                 showError('База данных не инициализирована.');
                 throw new Error('Firestore not initialized');
             }
             try {
                 const batch = db.batch();
-                users.forEach(user => {
+                usersToSave.forEach(user => {
                     const userRef = user.id ? db.collection('users').doc(user.id) : db.collection('users').doc();
+                    if (!user.id) user.id = userRef.id;
                     batch.set(userRef, user);
                 });
                 await batch.commit();
+                users = await loadUsers();
             } catch (error) {
                 console.error('Ошибка сохранения пользователей:', error.message);
                 showError('Ошибка сохранения данных.');
             }
         }
 
-        // Рендер форм
-        function renderAuthForm(isLogin = true, isResetPassword = false, resetStep = 1) {
-            const authContent = document.getElementById('authContent');
-            if (isResetPassword) {
-                if (resetStep === 1) {
-                    authContent.innerHTML = `
-                        <form class="auth-form" id="resetPasswordForm" onsubmit="handleResetPasswordStep1(event)">
-                            <div class="form-group">
-                                <label>Email</label>
-                                <input type="email" id="resetEmail" required placeholder="Введите ваш email">
-                            </div>
-                            <button type="submit" class="btn btn-primary">Получить код</button>
-                        </form>
-                        <div class="auth-links">
-                            <a href="#" onclick="renderAuthForm(true)">Вернуться ко входу</a>
-                        </div>
-                    `;
-                } else if (resetStep === 2) {
-                    authContent.innerHTML = `
-                        <form class="auth-form" id="resetPasswordForm" onsubmit="handleResetPasswordStep2(event)">
-                            <div class="form-group">
-                                <label>Код</label>
-                                <input type="text" id="resetCode" required placeholder="Введите код">
-                            </div>
-                            <div class="form-group password-toggle">
-                                <label>Новый пароль</label>
-                                <input type="password" id="newPassword" required placeholder="Введите новый пароль">
-                                <span class="toggle-icon" onclick="togglePassword('newPassword')">👁️</span>
-                            </div>
-                            <div class="form-group password-toggle">
-                                <label>Повторите пароль</label>
-                                <input type="password" id="confirmPassword" required placeholder="Повторите пароль">
-                                <span class="toggle-icon" onclick="togglePassword('confirmPassword')">👁️</span>
-                            </div>
-                            <button type="submit" class="btn btn-primary">Сбросить пароль</button>
-                        </form>
-                        <div class="auth-links">
-                            <a href="#" onclick="renderAuthForm(true)">Вернуться ко входу</a>
-                        </div>
-                    `;
-                }
-            } else {
-                authContent.innerHTML = `
-                    <form class="auth-form" id="authForm" onsubmit="handleAuth(event, ${isLogin})">
-                        ${isLogin ? `
-                        <div class="form-group">
-                            <label>Логин или Email</label>
-                            <input type="text" id="loginInput" required placeholder="Введите логин или email">
-                        </div>
-                        <div class="form-hint">Используйте ваш логин или email для входа</div>
-                        ` : `
-                        <div class="form-group">
-                            <label>Логин</label>
-                            <input type="text" id="username" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Email</label>
-                            <input type="email" id="email" required>
-                        </div>`}
-                        
-                        <div class="form-group password-toggle">
-                            <label>Пароль</label>
-                            <input type="password" id="password" required>
-                            <span class="toggle-icon" onclick="togglePassword('password')">👁️</span>
-                        </div>
-                        
-                        ${!isLogin ? `
-                        <div class="form-group password-toggle">
-                            <label>Повторите пароль</label>
-                            <input type="password" id="confirmPassword" required>
-                            <span class="toggle-icon" onclick="togglePassword('confirmPassword')">👁️</span>
-                        </div>` : ''}
-                        
-                        <button type="submit" class="btn btn-primary">
-                            ${isLogin ? 'Войти' : 'Зарегистрироваться'}
-                        </button>
-                    </form>
-                    
-                    <div class="auth-links">
-                        ${isLogin ? 
-                            'Нет аккаунта? <a href="#" onclick="renderAuthForm(false)">Зарегистрируйтесь</a> | <a href="#" onclick="renderAuthForm(true, true)">Забыли пароль?</a>' : 
-                            'Уже есть аккаунт? <a href="#" onclick="renderAuthForm(true)">Войдите</a>'}
-                    </div>
-                `;
-            }
-        }
-
         // Показать/Скрыть пароль
-        function togglePassword(inputId) {
-            const input = document.getElementById(inputId);
-            const icon = input.nextElementSibling;
-            if (input.type === 'password') {
-                input.type = 'text';
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const icon = passwordInput.nextElementSibling;
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
                 icon.textContent = '🙈';
             } else {
-                input.type = 'password';
+                passwordInput.type = 'password';
                 icon.textContent = '👁️';
             }
         }
 
-        // Обработка авторизации
-        async function handleAuth(e, isLogin) {
-            e.preventDefault();
-            
-            const users = await loadUsers();
-            
-            const getValue = (id) => document.getElementById(id).value.trim();
-            
-            const userData = {
-                password: getValue('password')
-            };
-            
-            if (isLogin) {
-                userData.loginInput = getValue('loginInput');
-            } else {
-                userData.username = getValue('username');
-                userData.email = getValue('email');
-                userData.role = 'user'; // Роль по умолчанию
-                userData.isBlocked = false; // Новый пользователь не заблокирован
-                userData.isEmailPrivate = false; // По умолчанию email не скрыт
-                const confirmPassword = getValue('confirmPassword');
-                
-                if (userData.password !== confirmPassword) {
-                    return showError('Пароли не совпадают');
-                }
-                if (userData.password.length < 6) {
-                    return showError('Пароль должен содержать минимум 6 символов');
-                }
-            }
-            
-            // Валидация
-            if (!isLogin) {
-                if (!validateEmail(userData.email)) {
-                    return showError('Неверный формат email');
-                }
-                if (users.some(u => u.email === userData.email)) {
-                    return showError('Пользователь с таким email уже существует');
-                }
-                if (users.some(u => u.username === userData.username)) {
-                    return showError('Пользователь с таким логином уже существует');
-                }
-            }
-            
-            if (isLogin) {
-                const user = users.find(u => 
-                    (u.email === userData.loginInput || u.username === userData.loginInput) && 
-                    u.password === userData.password
-                );
-                if (!user) {
-                    return showError('Неверные данные');
-                }
-                if (user.isBlocked) {
-                    return showError('Ваш аккаунт заблокирован');
-                }
-                loginUser(user);
-            } else {
-                registerUser(userData);
-            }
+        // Показать модальное окно
+        function showForgotPasswordModal() {
+            document.getElementById('forgotPasswordModal').style.display = 'flex';
+            document.getElementById('emailStep').style.display = 'block';
+            document.getElementById('codeStep').style.display = 'none';
+            document.getElementById('newPasswordStep').style.display = 'none';
+            document.getElementById('emailInput').value = '';
+            document.getElementById('codeInput').value = '';
+            document.getElementById('newPasswordInput').value = '';
+            document.getElementById('confirmPasswordInput').value = '';
         }
 
-        // Восстановление пароля: шаг 1 (запрос кода)
-        async function handleResetPasswordStep1(e) {
-            e.preventDefault();
-            const email = document.getElementById('resetEmail').value.trim();
-            const users = await loadUsers();
+        // Закрыть модальное окно
+        function closeModal() {
+            document.getElementById('forgotPasswordModal').style.display = 'none';
+            resetCode = null;
+            resetEmail = null;
+        }
+
+        // Отправка кода подтверждения на email
+        async function sendResetCode() {
+            const email = document.getElementById('emailInput').value.trim();
+            if (!email) {
+                showError('Введите email', true);
+                return;
+            }
+
             const user = users.find(u => u.email === email);
             if (!user) {
-                return showError('Пользователь с таким email не найден');
-            }
-            // Генерация временного кода
-            const code = Math.floor(100000 + Math.random() * 900000).toString();
-            const resetToken = { email, code, expires: Date.now() + 5 * 60 * 1000 }; // Код действителен 5 минут
-            localStorage.setItem('resetToken', JSON.stringify(resetToken));
-            alert(`Ваш код для сброса пароля: ${code}`); // В реальном приложении отправить на email
-            renderAuthForm(true, true, 2);
-        }
-
-        // Восстановление пароля: шаг 2 (ввод кода и нового пароля)
-        async function handleResetPasswordStep2(e) {
-            e.preventDefault();
-            const code = document.getElementById('resetCode').value.trim();
-            const newPassword = document.getElementById('newPassword').value.trim();
-            const confirmPassword = document.getElementById('confirmPassword').value.trim();
-            const resetToken = JSON.parse(localStorage.getItem('resetToken'));
-
-            if (!resetToken || resetToken.expires < Date.now()) {
-                localStorage.removeItem('resetToken');
-                showError('Код истек или недействителен');
-                renderAuthForm(true);
+                showError('Пользователь с таким email не найден', true);
                 return;
             }
-            if (resetToken.code !== code) {
-                return showError('Неверный код');
+
+            // Генерация случайного 6-значного кода
+            resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+            resetEmail = email;
+
+            // Отправка email через EmailJS
+            try {
+                await emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', {
+                    to_email: email,
+                    reset_code: resetCode,
+                    user_name: user.username
+                });
+                showError('Код отправлен на ваш email', true);
+                document.getElementById('emailStep').style.display = 'none';
+                document.getElementById('codeStep').style.display = 'block';
+            } catch (error) {
+                console.error('Ошибка отправки email:', error);
+                showError('Ошибка отправки кода', true);
             }
+        }
+
+        // Проверка кода подтверждения
+        function verifyCode() {
+            const codeInput = document.getElementById('codeInput').value.trim();
+            if (codeInput !== resetCode) {
+                showError('Неверный код', true);
+                return;
+            }
+            document.getElementById('codeStep').style.display = 'none';
+            document.getElementById('newPasswordStep').style.display = 'block';
+        }
+
+        // Смена пароля
+        async function resetPassword() {
+            const newPassword = document.getElementById('newPasswordInput').value.trim();
+            const confirmPassword = document.getElementById('confirmPasswordInput').value.trim();
+
             if (newPassword !== confirmPassword) {
-                return showError('-parоли не совпадают');
-            }
-            if (newPassword.length < 6) {
-                return showError('Пароль должен содержать минимум 6 символов');
-            }
-
-            const users = await loadUsers();
-            const user = users.find(u => u.email === resetToken.email);
-            if (!user) {
-                showError('Пользователь не найден');
-                renderAuthForm(true);
+                showError('Пароли не совпадают', true);
                 return;
             }
 
-            user.password = newPassword;
-            if (user.isBlocked) {
-                user.isBlocked = false; // Разблокировка при сбросе пароля
+            if (newPassword.length < 6) {
+                showError('Пароль должен содержать минимум 6 символов', true);
+                return;
             }
-            await saveUsers([user]);
-            localStorage.removeItem('resetToken');
-            showError('Пароль успешно сброшен');
-            renderAuthForm(true);
+
+            const user = users.find(u => u.email === resetEmail);
+            if (user) {
+                user.password = newPassword;
+                await saveUsers([user]);
+                showError('Пароль успешно изменён', true);
+                setTimeout(closeModal, 2000);
+            } else {
+                showError('Ошибка: пользователь не найден', true);
+            }
+            resetCode = null;
+            resetEmail = null;
         }
 
-        function validateEmail(email) {
-            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-        }
+        // Обработка отправки формы авторизации
+        document.getElementById('authForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
 
-        async function registerUser(userData) {
-            const users = await loadUsers();
-            users.push(userData);
-            await saveUsers(users);
-            loginUser(userData);
-        }
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
 
-        function loginUser(user) {
+            await loadUsers();
+
+            const user = users.find(u => u.username === username && u.password === password);
+
+            if (!user) {
+                showError('Неверный логин или пароль');
+                return;
+            }
+
+            if (user.isBlocked) {
+                showError('Ваш аккаунт заблокирован');
+                return;
+            }
+
             localStorage.setItem('currentUser', JSON.stringify(user));
             window.location.href = 'profile.html';
-        }
+        });
 
-        // Инициализация
-        try {
-            renderAuthForm(true);
-        } catch (error) {
-            showError('Ошибка отображения формы: ' + error.message);
-        }
+        // Проверка, если пользователь уже авторизован
+        document.addEventListener('DOMContentLoaded', async function() {
+            const userData = localStorage.getItem('currentUser');
+            if (userData) {
+                currentUser = JSON.parse(userData);
+                await loadUsers();
+                const userExists = users.some(u => u.username === currentUser.username);
+                if (userExists) {
+                    window.location.href = 'profile.html';
+                } else {
+                    localStorage.removeItem('currentUser');
+                }
+            }
+        });
     </script>
 </body>
 </html>
