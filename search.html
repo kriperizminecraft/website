@@ -128,39 +128,6 @@
             color: rgba(255, 255, 255, 0.8);
         }
 
-        .messages-list {
-            max-height: 200px;
-            overflow-y: auto;
-            margin-top: 1rem;
-            padding: 1rem;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-        }
-
-        .message-item {
-            padding: 0.5rem;
-            margin-bottom: 0.5rem;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 5px;
-        }
-
-        .message-form {
-            margin-top: 1rem;
-            padding: 1rem;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-            display: none;
-        }
-
-        .message-form textarea {
-            display: block;
-            margin: 0.5rem 0;
-            width: 100%;
-            padding: 0.5rem;
-            border-radius: 5px;
-            border: none;
-        }
-
         .error-message {
             color: var(--primary, #ff6b6b);
             display: none;
@@ -203,13 +170,6 @@
         <div class="profile-preview" id="profilePreview" style="display: none;">
             <div id="avatarContainer"></div>
             <p class="profile-data" id="profileData"></p>
-            <button class="btn" id="messageBtn" style="display: none;">Написать сообщение</button>
-            <div class="message-form" id="messageForm">
-                <textarea id="messageText" placeholder="Введите сообщение" rows="3"></textarea>
-                <button class="btn" onclick="sendMessage()">Отправить</button>
-                <button class="btn" onclick="cancelMessage()">Отмена</button>
-            </div>
-            <div class="messages-list" id="messagesList"></div>
         </div>
         <button class="btn" onclick="window.location.href='profile.html'">Назад к профилю</button>
         <button class="btn" id="logoutBtn" style="display: none;" onclick="logout()">Выйти</button>
@@ -272,51 +232,6 @@
             }
         }
 
-        // Загрузка сообщений из Firestore
-        async function loadMessages() {
-            if (!db) {
-                showError('База данных не инициализирована.');
-                throw new Error('Firestore not initialized');
-            }
-            try {
-                const messagesSnapshot = await db.collection('messages').get();
-                return messagesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            } catch (error) {
-                console.error('Ошибка загрузки сообщений:', error.message);
-                showError('Ошибка загрузки сообщений.');
-                return [];
-            }
-        }
-
-        // Сохранение сообщений в Firestore
-        async function saveMessages(messages) {
-            if (!db) {
-                showError('База данных не инициализирована.');
-                throw new Error('Firestore not initialized');
-            }
-            try {
-                const batch = db.batch();
-                messages.forEach(msg => {
-                    const msgRef = msg.id ? db.collection('messages').doc(msg.id) : db.collection('messages').doc();
-                    if (!msg.id) msg.id = msgRef.id; // Присваиваем ID, если его нет
-                    batch.set(msgRef, msg);
-                });
-                await batch.commit();
-            } catch (error) {
-                console.error('Ошибка сохранения сообщений:', error.message);
-                showError('Ошибка сохранения сообщений.');
-            }
-        }
-
-        // Получение сообщений между двумя пользователями
-        async function getMessagesBetween(sender, receiver) {
-            const messages = await loadMessages();
-            return messages.filter(
-                msg => (msg.sender === sender && msg.receiver === receiver) || 
-                       (msg.sender === receiver && msg.receiver === sender)
-            );
-        }
-
         function searchUsers() {
             const searchInput = document.getElementById('searchInput').value.toLowerCase();
             const searchResults = document.getElementById('searchResults');
@@ -342,7 +257,7 @@
             });
         }
 
-        async function renderProfile(user) {
+        function renderProfile(user) {
             selectedUser = user;
             const profilePreview = document.getElementById('profilePreview');
             profilePreview.style.display = 'block';
@@ -353,23 +268,6 @@
                 Роль: <span>${user.role === 'admin' ? 'Администратор' : 'Пользователь'}</span>
             `;
             renderAvatar(user);
-
-            // Отображение сообщений (только для авторизованных пользователей)
-            const messagesList = document.getElementById('messagesList');
-            messagesList.innerHTML = '';
-            if (currentUser) {
-                const messages = await getMessagesBetween(currentUser.username, selectedUser.username);
-                messagesList.innerHTML = messages.length === 0 ? '<p>Нет сообщений</p>' : '';
-                messages.forEach(msg => {
-                    const messageItem = document.createElement('div');
-                    messageItem.className = 'message-item';
-                    messageItem.textContent = `${msg.sender} (${new Date(msg.timestamp).toLocaleString()}): ${msg.text}`;
-                    messagesList.appendChild(messageItem);
-                });
-                document.getElementById('messageBtn').style.display = currentUser.username !== selectedUser.username ? 'block' : 'none';
-            } else {
-                messagesList.innerHTML = '<p>Войдите, чтобы видеть сообщения.</p>';
-            }
         }
 
         function renderAvatar(user) {
@@ -381,38 +279,6 @@
                     avatarContainer.innerHTML = `<div class="avatar-placeholder">Нет аватара</div>`;
                 }
             }
-        }
-
-        async function sendMessage() {
-            if (!currentUser) {
-                showError('Войдите, чтобы отправить сообщение.');
-                return;
-            }
-
-            const messageText = document.getElementById('messageText').value.trim();
-            if (!messageText) {
-                showError('Сообщение не может быть пустым.');
-                return;
-            }
-
-            const messages = await loadMessages();
-            const newMessage = {
-                sender: currentUser.username,
-                receiver: selectedUser.username,
-                text: messageText,
-                timestamp: Date.now()
-            };
-            messages.push(newMessage);
-            await saveMessages([newMessage]);
-
-            document.getElementById('messageText').value = '';
-            document.getElementById('messageForm').style.display = 'none';
-            renderProfile(selectedUser);
-        }
-
-        function cancelMessage() {
-            document.getElementById('messageForm').style.display = 'none';
-            document.getElementById('messageText').value = '';
         }
 
         function logout() {
@@ -448,14 +314,6 @@
                 document.getElementById('logoutBtn').style.display = 'block';
             } else {
                 document.getElementById('loginBtn').style.display = 'block';
-            }
-
-            // Обработчик для кнопки "Написать сообщение"
-            const messageBtn = document.getElementById('messageBtn');
-            if (messageBtn) {
-                messageBtn.addEventListener('click', () => {
-                    document.getElementById('messageForm').style.display = 'block';
-                });
             }
         });
     </script>
