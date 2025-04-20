@@ -173,6 +173,24 @@
     </section>
 
     <script>
+        // Функция для отображения ошибки на странице
+        function showError(message) {
+            const error = document.getElementById('errorMessage');
+            error.textContent = message;
+            error.style.display = 'block';
+            setTimeout(() => {
+                error.style.display = 'none';
+                document.getElementById('authForm')?.reset();
+                document.getElementById('resetPasswordForm')?.reset();
+            }, 3000);
+        }
+
+        // Проверка загрузки Firebase
+        if (typeof firebase === 'undefined') {
+            showError('Не удалось загрузить Firebase. Проверьте подключение к интернету.');
+            throw new Error('Firebase not loaded');
+        }
+
         // Инициализация Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyA3jMYOt2eGZXJy8SIqWbIG5kZwsR27KwY",
@@ -184,8 +202,13 @@
             measurementId: "G-G5MBZG0Z82"
         };
 
-        const app = firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+        try {
+            const app = firebase.initializeApp(firebaseConfig);
+            const db = firebase.firestore();
+        } catch (error) {
+            showError('Ошибка инициализации Firebase: ' + error.message);
+            throw error;
+        }
 
         // Проверка авторизации
         const currentUser = JSON.parse(localStorage.getItem('currentUser'));
@@ -201,7 +224,7 @@
                 return users;
             } catch (error) {
                 console.error('Ошибка загрузки пользователей:', error.message);
-                alert('Ошибка загрузки данных пользователей. Создаем пустой список.');
+                showError('Ошибка загрузки данных пользователей.');
                 return [];
             }
         }
@@ -217,7 +240,7 @@
                 await batch.commit();
             } catch (error) {
                 console.error('Ошибка сохранения пользователей:', error.message);
-                alert('Ошибка сохранения данных.');
+                showError('Ошибка сохранения данных.');
             }
         }
 
@@ -449,17 +472,6 @@
             return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
         }
 
-        function showError(message) {
-            const error = document.getElementById('errorMessage');
-            error.textContent = message;
-            error.style.display = 'block';
-            setTimeout(() => {
-                error.style.display = 'none';
-                document.getElementById('authForm')?.reset();
-                document.getElementById('resetPasswordForm')?.reset();
-            }, 3000);
-        }
-
         async function registerUser(userData) {
             const users = await loadUsers();
             users.push(userData);
@@ -473,7 +485,11 @@
         }
 
         // Инициализация
-        renderAuthForm(true);
+        try {
+            renderAuthForm(true);
+        } catch (error) {
+            showError('Ошибка отображения формы: ' + error.message);
+        }
     </script>
 </body>
 </html>
