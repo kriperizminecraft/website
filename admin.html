@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Админ-панель</title>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e1e2f, #2a2a4a);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .admin-container {
+            max-width: 900px;
+            width: 90%;
+            margin: 4rem auto;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .title {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            color: #fff;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            gap: 1rem;
+        }
+
+        .search-input {
+            padding: 0.5rem;
+            border-radius: 5px;
+            border: none;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .sort-select {
+            padding: 0.5rem;
+            border-radius: 5px;
+            border: none;
+        }
+
+        .users-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .user-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1rem;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-info {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .user-info span {
+            color: var(--primary, #ff6b6b);
+        }
+
+        .user-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            background: var(--primary, #ff6b6b);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.3s;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark, #e55a5a);
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn.blocked {
+            background: #555;
+        }
+
+        .btn.blocked:hover {
+            background: #444;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .pagination-btn {
+            padding: 0.5rem 1rem;
+            background: var(--primary, #ff6b6b);
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+        }
+
+        .pagination-btn:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+
+        .error-message {
+            color: var(--primary, #ff6b6b);
+            display: none;
+            margin-top: 1rem;
+            text-align: center;
+            font-size: 0.9rem;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .back-btn {
+            display: block;
+            margin: 2rem auto;
+            padding: 1rem;
+            background: var(--primary, #ff6b6b);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.3s;
+            width: 100%;
+            max-width: 200px;
+        }
+
+        .back-btn:hover {
+            background: var(--primary-dark, #e55a5a);
+            transform: translateY(-2px);
+        }
+
+        .edit-form {
+            display: none;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .edit-form input, .edit-form select {
+            padding: 0.5rem;
+            margin: 0.5rem 0;
+            width: 100%;
+            border-radius: 5px;
+            border: none;
+        }
+
+        @media (max-width: 480px) {
+            .admin-container {
+                padding: 1.5rem;
+                margin: 2rem auto;
+            }
+
+            .title {
+                font-size: 1.5rem;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+
+            .user-item {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <section class="admin-container">
+        <h2 class="title">Админ-панель</h2>
+        <div class="controls">
+            <input type="text" class="search-input" id="searchInput" placeholder="Поиск по логину или email" oninput="renderUsersList()">
+            <select class="sort-select" id="sortSelect" onchange="renderUsersList()">
+                <option value="username">Сортировать по логину</option>
+                <option value="email">Сортировать по email</option>
+                <option value="status">Сортировать по статусу</option>
+                <option value="role">Сортировать по роли</option>
+            </select>
+        </div>
+        <div class="users-list" id="usersList"></div>
+        <div class="pagination" id="pagination"></div>
+        <div class="edit-form" id="editForm">
+            <input type="text" id="editUsername" placeholder="Логин" disabled>
+            <input type="email" id="editEmail" placeholder="Email">
+            <select id="editRole">
+                <option value="user">Пользователь</option>
+                <option value="admin">Администратор</option>
+            </select>
+            <label><input type="checkbox" id="editEmailPrivate"> Скрыть email</label>
+            <button class="btn" onclick="saveEdit()">Сохранить</button>
+            <button class="btn" onclick="cancelEdit()">Отмена</button>
+        </div>
+        <div class="error-message" id="errorMessage"></div>
+        <button class="back-btn" onclick="window.location.href='profile.html'">Назад</button>
+    </section>
+
+    <script>
+        // Инициализация Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyA3jMYOt2eGZXJy8SIqWbIG5kZwsR27KwY",
+            authDomain: "website-c1e4c.firebaseapp.com",
+            projectId: "website-c1e4c",
+            storageBucket: "website-c1e4c.firebasestorage.app",
+            messagingSenderId: "838275352771",
+            appId: "1:838275352771:web:afe4b0608ac7ddc581ba76",
+            measurementId: "G-G5MBZG0Z82"
+        };
+
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        const ITEMS_PER_PAGE = 5;
+        let currentPage = 1;
+        let editingUser = null;
+        let users = [];
+
+        // Загрузка пользователей из Firestore
+        async function loadUsers() {
+            try {
+                const usersSnapshot = await db.collection('users').get();
+                users = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                return users;
+            } catch (error) {
+                console.error('Ошибка загрузки пользователей:', error.message);
+                showError('Ошибка загрузки данных.');
+                return [];
+            }
+        }
+
+        // Сохранение пользователей в Firestore
+        async function saveUsers(usersToSave) {
+            try {
+                const batch = db.batch();
+                usersToSave.forEach(user => {
+                    const userRef = user.id ? db.collection('users').doc(user.id) : db.collection('users').doc();
+                    if (!user.id) user.id = userRef.id; // Присваиваем ID, если его нет
+                    batch.set(userRef, user);
+                });
+                await batch.commit();
+                // Обновляем локальный массив users после сохранения
+                users = await loadUsers();
+            } catch (error) {
+                console.error('Ошибка сохранения:', error.message);
+                showError('Ошибка сохранения данных.');
+            }
+        }
+
+        // Удаление пользователя из Firestore
+        async function deleteUserFromFirestore(userId) {
+            try {
+                await db.collection('users').doc(userId).delete();
+                users = await loadUsers(); // Обновляем локальный массив
+            } catch (error) {
+                console.error('Ошибка удаления пользователя:', error.message);
+                showError('Ошибка удаления пользователя.');
+            }
+        }
+
+        function showError(message) {
+            const error = document.getElementById('errorMessage');
+            error.textContent = message;
+            error.style.display = 'block';
+            setTimeout(() => error.style.display = 'none', 3000);
+        }
+
+        async function renderUsersList() {
+            const usersList = document.getElementById('usersList');
+            const searchInput = document.getElementById('searchInput').value.toLowerCase();
+            const sortSelect = document.getElementById('sortSelect').value;
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+
+            let filteredUsers = users.filter(user => user.username !== currentUser.username);
+
+            filteredUsers = filteredUsers.filter(user =>
+                user.username.toLowerCase().includes(searchInput) ||
+                user.email.toLowerCase().includes(searchInput)
+            );
+
+            filteredUsers.sort((a, b) => {
+                if (sortSelect === 'username') return a.username.localeCompare(b.username);
+                if (sortSelect === 'email') return a.email.localeCompare(b.email);
+                if (sortSelect === 'status') return (a.isBlocked ? 1 : 0) - (b.isBlocked ? 1 : 0);
+                if (sortSelect === 'role') return a.role.localeCompare(b.role);
+            });
+
+            const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE);
+            const start = (currentPage - 1) * ITEMS_PER_PAGE;
+            const paginatedUsers = filteredUsers.slice(start, start + ITEMS_PER_PAGE);
+
+            usersList.innerHTML = paginatedUsers.length === 0 ? '<p>Пользователи не найдены</p>' : '';
+            paginatedUsers.forEach(user => {
+                const userItem = document.createElement('div');
+                userItem.className = 'user-item';
+                userItem.innerHTML = `
+                    <div class="user-info">
+                        Логин: <span>${user.username}</span> | 
+                        Email: <span>${user.isEmailPrivate ? 'Скрыт' : user.email}</span> | 
+                        Роль: <span>${user.role === 'admin' ? 'Администратор' : 'Пользователь'}</span> | 
+                        Статус: <span>${user.isBlocked ? 'Заблокирован' : 'Активен'}</span>
+                    </div>
+                    <div class="user-actions">
+                        <button class="btn ${user.isBlocked ? 'blocked' : ''}" onclick="toggleBlockUser('${user.username}')">
+                            ${user.isBlocked ? 'Разблокировать' : 'Заблокировать'}
+                        </button>
+                        <button class="btn" onclick="editUser('${user.username}')">Редактировать</button>
+                        <button class="btn" onclick="deleteUser('${user.username}')">Удалить</button>
+                    </div>
+                `;
+                usersList.appendChild(userItem);
+            });
+
+            renderPagination(totalPages);
+        }
+
+        function renderPagination(totalPages) {
+            const pagination = document.getElementById('pagination');
+            pagination.innerHTML = '';
+            const prevBtn = document.createElement('button');
+            prevBtn.className = 'pagination-btn';
+            prevBtn.textContent = 'Назад';
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.onclick = () => { currentPage--; renderUsersList(); };
+            pagination.appendChild(prevBtn);
+
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'pagination-btn';
+            nextBtn.textContent = 'Вперед';
+            nextBtn.disabled = currentPage === totalPages || totalPages === 0;
+            nextBtn.onclick = () => { currentPage++; renderUsersList(); };
+            pagination.appendChild(nextBtn);
+        }
+
+        async function toggleBlockUser(username) {
+            const userIndex = users.findIndex(u => u.username === username);
+            if (userIndex !== -1) {
+                users[userIndex].isBlocked = !users[userIndex].isBlocked;
+                await saveUsers([users[userIndex]]);
+                renderUsersList();
+                showError(`Пользователь ${username} ${users[userIndex].isBlocked ? 'заблокирован' : 'разблокирован'}`);
+            }
+        }
+
+        async function deleteUser(username) {
+            if (!confirm(`Вы уверены, что хотите удалить пользователя ${username}?`)) return;
+            const user = users.find(u => u.username === username);
+            if (user) {
+                await deleteUserFromFirestore(user.id);
+                renderUsersList();
+                showError(`Пользователь ${username} удалён`);
+            }
+        }
+
+        function editUser(username) {
+            const user = users.find(u => u.username === username);
+            if (user) {
+                editingUser = user;
+                const editForm = document.getElementById('editForm');
+                document.getElementById('editUsername').value = user.username;
+                document.getElementById('editEmail').value = user.email;
+                document.getElementById('editRole').value = user.role;
+                document.getElementById('editEmailPrivate').checked = user.isEmailPrivate;
+                editForm.style.display = 'block';
+            }
+        }
+
+        async function saveEdit() {
+            const userIndex = users.findIndex(u => u.username === editingUser.username);
+            if (userIndex !== -1) {
+                users[userIndex].email = document.getElementById('editEmail').value;
+                users[userIndex].role = document.getElementById('editRole').value;
+                users[userIndex].isEmailPrivate = document.getElementById('editEmailPrivate').checked;
+                await saveUsers([users[userIndex]]);
+                editingUser = null;
+                document.getElementById('editForm').style.display = 'none';
+                renderUsersList();
+                showError('Изменения сохранены');
+            }
+        }
+
+        function cancelEdit() {
+            editingUser = null;
+            document.getElementById('editForm').style.display = 'none';
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (!currentUser) {
+                alert('Ошибка авторизации.');
+                window.location.href = 'index.html';
+                return;
+            }
+            if (currentUser.role !== 'admin') {
+                alert('Доступ запрещён.');
+                window.location.href = 'profile.html';
+                return;
+            }
+            await loadUsers();
+            renderUsersList();
+        });
+    </script>
+</body>
+</html>
