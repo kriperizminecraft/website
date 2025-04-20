@@ -127,6 +127,36 @@
             transform: translateY(0);
         }
 
+        .icon-btn {
+            padding: 1rem;
+            background: var(--primary, #ff6b6b);
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.3s;
+            display: block;
+            margin: 0.5rem auto;
+            width: 100%;
+            max-width: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .icon-btn:hover {
+            background: var(--primary-dark, #e55a5a);
+            transform: translateY(-2px);
+        }
+
+        .icon-btn:active {
+            transform: translateY(0);
+        }
+
+        .icon-btn svg {
+            width: 24px;
+            height: 24px;
+        }
+
         .error-message {
             color: var(--primary, #ff6b6b);
             display: none;
@@ -161,7 +191,7 @@
                 height: 80px;
             }
 
-            .btn {
+            .btn, .icon-btn {
                 font-size: 0.9rem;
             }
         }
@@ -180,6 +210,13 @@
         <div class="privacy-settings">
             <label><input type="checkbox" id="emailPrivate" onchange="toggleEmailPrivacy()"> Скрыть email</label>
         </div>
+        <button class="icon-btn" onclick="window.location.href='messages.html'" title="Сообщения">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                <path d="M9 9h6"/>
+                <path d="M9 12h6"/>
+            </svg>
+        </button>
         <button class="btn" onclick="window.location.href='search.html'">Поиск пользователей</button>
         <button class="btn" id="adminBtn" style="display: none;" onclick="window.location.href='admin.html'">Админ-панель</button>
         <button class="btn" onclick="window.location.href='change-password.html'">Сменить пароль</button>
