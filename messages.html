@@ -335,9 +335,9 @@
 
         let currentUser = null;
         let users = [];
+        let messages = [];
         let selectedUser = null;
-        let unsubscribeMessages = null; // Для отписки от слушателя сообщений
-        let unsubscribeChats = null; // Для отписки от слушателя чатов
+        let updateInterval = null; // Для хранения интервала обновления
 
         // Загрузка пользователей из Firestore
         async function loadUsers() {
@@ -356,84 +356,56 @@
             }
         }
 
-        // Подписка на изменения сообщений в реальном времени
-        function subscribeToMessages(senderUsername, receiverUsername) {
-            // Отписываемся от предыдущего слушателя, если он существует
-            if (unsubscribeMessages) {
-                unsubscribeMessages();
+        // Загрузка сообщений из Firestore
+        async function loadMessages() {
+            if (!db) {
+                showError('База данных не инициализирована.');
+                throw new Error('Firestore not initialized');
             }
-
-            const messagesList = document.getElementById('messagesList');
-            if (!messagesList) return; // Если чат не открыт, ничего не делаем
-
-            messagesList.innerHTML = '<p>Загрузка сообщений...</p>';
-
-            // Формируем запрос для сообщений между двумя пользователями
-            unsubscribeMessages = db.collection('messages')
-                .where('sender', 'in', [senderUsername, receiverUsername])
-                .where('receiver', 'in', [senderUsername, receiverUsername])
-                .orderBy('timestamp', 'asc')
-                .onSnapshot(snapshot => {
-                    messagesList.innerHTML = ''; // Очищаем перед обновлением
-                    const messagesBetween = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    if (messagesBetween.length === 0) {
-                        messagesList.innerHTML = '<p>Нет сообщений</p>';
-                    } else {
-                        messagesBetween.forEach(msg => {
-                            const messageDiv = document.createElement('div');
-                            messageDiv.className = `message ${msg.sender === currentUser.username ? 'sent' : 'received'}`;
-                            messageDiv.innerHTML = `
-                                ${msg.text}
-                                <div class="message-timestamp">${new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-                            `;
-                            messagesList.appendChild(messageDiv);
-                        });
-                    }
-                    // Прокручиваем список сообщений вниз
-                    messagesList.scrollTop = messagesList.scrollHeight;
-                }, error => {
-                    console.error('Ошибка подписки на сообщения:', error.message);
-                    showError('Ошибка загрузки сообщений.');
-                });
+            try {
+                const messagesSnapshot = await db.collection('messages').get();
+                messages = messagesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                return messages;
+            } catch (error) {
+                console.error('Ошибка загрузки сообщений:', error.message);
+                showError('Ошибка загрузки сообщений.');
+                return [];
+            }
         }
 
-        // Подписка на изменения чатов в реальном времени
-        function subscribeToChats() {
-            // Отписываемся от предыдущего слушателя, если он существует
-            if (unsubscribeChats) {
-                unsubscribeChats();
+        // Обновление чата (вызывается каждую секунду)
+        async function updateChat() {
+            await loadMessages();
+
+            // Обновляем список чатов
+            renderChatList();
+
+            // Если чат открыт, обновляем сообщения
+            if (selectedUser) {
+                const messagesList = document.getElementById('messagesList');
+                if (messagesList) {
+                    const messagesBetween = messages.filter(
+                        msg => (msg.sender === currentUser.username && msg.receiver === selectedUser.username) ||
+                               (msg.sender === selectedUser.username && msg.receiver === currentUser.username)
+                    ).sort((a, b) => a.timestamp - b.timestamp);
+
+                    messagesList.innerHTML = messagesBetween.length === 0 ? '<p>Нет сообщений</p>' : '';
+                    messagesBetween.forEach(msg => {
+                        const messageDiv = document.createElement('div');
+                        messageDiv.className = `message ${msg.sender === currentUser.username ? 'sent' : 'received'}`;
+                        messageDiv.innerHTML = `
+                            ${msg.text}
+                            <div class="message-timestamp">${new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                        `;
+                        messagesList.appendChild(messageDiv);
+                    });
+                    messagesList.scrollTop = messagesList.scrollHeight;
+                }
             }
-
-            // Подписываемся на сообщения, где текущий пользователь — отправитель или получатель
-            unsubscribeChats = db.collection('messages')
-                .where('sender', '==', currentUser.username)
-                .onSnapshot(() => {
-                    renderChatList();
-                }, error => {
-                    console.error('Ошибка подписки на чаты (sender):', error.message);
-                    showError('Ошибка обновления списка чатов.');
-                });
-
-            unsubscribeChats = db.collection('messages')
-                .where('receiver', '==', currentUser.username)
-                .onSnapshot(() => {
-                    renderChatList();
-                }, error => {
-                    console.error('Ошибка подписки на чаты (receiver):', error.message);
-                    showError('Ошибка обновления списка чатов.');
-                });
         }
 
         // Получение чатов для текущего пользователя
-        async function getChats() {
-            const messagesSnapshot1 = await db.collection('messages')
-                .where('sender', '==', currentUser.username)
-                .get();
-            const messagesSnapshot2 = await db.collection('messages')
-                .where('receiver', '==', currentUser.username)
-                .get();
-            const messages = [...messagesSnapshot1.docs, ...messagesSnapshot2.docs].map(doc => ({ id: doc.id, ...doc.data() }));
-
+        function getChats() {
             const chats = [];
             const usernames = new Set();
             messages.forEach(msg => {
@@ -488,7 +460,7 @@
 
         // Рендеринг списка чатов
         async function renderChatList() {
-            const chats = await getChats();
+            const chats = getChats();
             const chatList = document.getElementById('chatList');
             chatList.innerHTML = chats.length === 0 ? '<p>Нет чатов</p>' : '';
             chats.forEach(chat => {
@@ -510,9 +482,14 @@
         }
 
         // Выбор чата
-        function selectChat(user) {
+        async function selectChat(user) {
             selectedUser = user;
             const chatArea = document.getElementById('chatArea');
+            const messagesBetween = messages.filter(
+                msg => (msg.sender === currentUser.username && msg.receiver === user.username) ||
+                       (msg.sender === user.username && msg.receiver === currentUser.username)
+            ).sort((a, b) => a.timestamp - b.timestamp);
+
             chatArea.innerHTML = `
                 <div class="chat-header">
                     ${user.avatar ? 
@@ -521,16 +498,21 @@
                     <div class="chat-username">${user.username}</div>
                 </div>
                 <div class="messages-list" id="messagesList">
-                    <p>Загрузка сообщений...</p>
+                    ${messagesBetween.length === 0 ? '<p>Нет сообщений</p>' : ''}
+                    ${messagesBetween.map(msg => `
+                        <div class="message ${msg.sender === currentUser.username ? 'sent' : 'received'}">
+                            ${msg.text}
+                            <div class="message-timestamp">${new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                        </div>
+                    `).join('')}
                 </div>
                 <div class="message-input-area">
                     <input type="text" class="message-input" id="messageInput" placeholder="Введите сообщение">
                     <button class="send-btn" onclick="sendMessage()">Отправить</button>
                 </div>
             `;
-            // Подписываемся на сообщения между текущим пользователем и выбранным
-            subscribeToMessages(currentUser.username, selectedUser.username);
-            renderChatList();
+            const messagesList = document.getElementById('messagesList');
+            messagesList.scrollTop = messagesList.scrollHeight;
             document.getElementById('messageInput').focus();
         }
 
@@ -550,6 +532,7 @@
                     timestamp: Date.now()
                 });
                 messageInput.value = '';
+                // Не обновляем чат сразу, ждём следующего цикла setInterval
             } catch (error) {
                 console.error('Ошибка отправки сообщения:', error.message);
                 showError('Ошибка отправки сообщения.');
@@ -583,14 +566,18 @@
 
             currentUser = userExists;
             localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            await loadMessages();
             renderChatList();
-            subscribeToChats(); // Подписываемся на изменения чатов
+
+            // Устанавливаем интервал для обновления каждую секунду
+            updateInterval = setInterval(updateChat, 1000);
         });
 
-        // Очистка при выходе
+        // Очистка интервала при выходе
         window.addEventListener('beforeunload', () => {
-            if (unsubscribeMessages) unsubscribeMessages();
-            if (unsubscribeChats) unsubscribeChats();
+            if (updateInterval) {
+                clearInterval(updateInterval);
+            }
         });
     </script>
 </body>
