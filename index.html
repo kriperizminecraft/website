@@ -203,9 +203,10 @@
             measurementId: "G-G5MBZG0Z82"
         };
 
+        let db;
         try {
             firebase.initializeApp(firebaseConfig);
-            const db = firebase.firestore();
+            db = firebase.firestore();
         } catch (error) {
             showError('Ошибка инициализации Firebase: ' + error.message);
             throw error;
@@ -219,6 +220,10 @@
 
         // Загрузка пользователей из Firestore
         async function loadUsers() {
+            if (!db) {
+                showError('База данных не инициализирована.');
+                throw new Error('Firestore not initialized');
+            }
             try {
                 const usersSnapshot = await db.collection('users').get();
                 const users = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -232,6 +237,10 @@
 
         // Сохранение пользователей в Firestore
         async function saveUsers(users) {
+            if (!db) {
+                showError('База данных не инициализирована.');
+                throw new Error('Firestore not initialized');
+            }
             try {
                 const batch = db.batch();
                 users.forEach(user => {
@@ -440,7 +449,7 @@
                 return showError('Неверный код');
             }
             if (newPassword !== confirmPassword) {
-                return showError('Пароли не совпадают');
+                return showError('-parоли не совпадают');
             }
             if (newPassword.length < 6) {
                 return showError('Пароль должен содержать минимум 6 символов');
