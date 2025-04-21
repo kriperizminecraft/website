@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Панель администратора</title>
+    <!-- Firebase SDK (версия 8.10.1 для UMD-совместимости) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e1e2f, #2a2a4a);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+        }
+
+        h1, h2 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            justify-content: center;
+        }
+
+        .tab-btn {
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .tab-btn.active {
+            background: #ff6b6b;
+        }
+
+        .tab-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .moderation-list, .users-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .moderation-item, .user-item {
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .moderation-item p, .user-item p {
+            flex: 1;
+        }
+
+        .action-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            margin-left: 0.5rem;
+            transition: background 0.3s;
+        }
+
+        .approve-btn {
+            background: #28a745;
+        }
+
+        .approve-btn:hover {
+            background: #218838;
+        }
+
+        .reject-btn {
+            background: #dc3545;
+        }
+
+        .reject-btn:hover {
+            background: #c82333;
+        }
+
+        .mute-btn {
+            background: #ff6b6b;
+        }
+
+        .mute-btn:hover {
+            background: #e55a5a;
+        }
+
+        .unmute-btn {
+            background: #17a2b8;
+        }
+
+        .unmute-btn:hover {
+            background: #138496;
+        }
+
+        .error-message {
+            color: #ff6b6b;
+            display: none;
+            margin: 1rem 0;
+            text-align: center;
+            font-size: 0.9rem;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .logout-btn {
+            padding: 0.5rem 1rem;
+            background: #ff6b6b;
+            border: none;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            margin-bottom: 1rem;
+            transition: background 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: #e55a5a;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <button class="logout-btn" onclick="logout()">Выйти</button>
+        <h1>Панель администратора</h1>
+        <div class="error-message" id="errorMessage"></div>
+        <div class="tabs">
+            <button class="tab-btn active" onclick="openTab('moderationTab')">Модерация чата</button>
+            <button class="tab-btn" onclick="openTab('usersTab')">Пользователи</button>
+        </div>
+
+        <div id="moderationTab" class="tab-content active">
+            <h2>Сообщения на модерации</h2>
+            <div class="moderation-list" id="moderationList"></div>
+        </div>
+
+        <div id="usersTab" class="tab-content">
+            <h2>Управление пользователями</h2>
+            <div class="users-list" id="usersList"></div>
+        </div>
+    </div>
+
+    <script>
+        // Функция для отображения ошибки
+        function showError(message) {
+            const error = document.getElementById('errorMessage');
+            error.textContent = message;
+            error.style.display = 'block';
+            setTimeout(() => error.style.display = 'none', 3000);
+        }
+
+        // Инициализация Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyA3jMYOt2eGZXJy8SIqWbIG5kZwsR27KwY",
+            authDomain: "website-c1e4c.firebaseapp.com",
+            projectId: "website-c1e4c",
+            storageBucket: "website-c1e4c.firebasestorage.app",
+            messagingSenderId: "838275352771",
+            appId: "1:838275352771:web:afe4b0608ac7ddc581ba76",
+            measurementId: "G-G5MBZG0Z82"
+        };
+
+        let db;
+        try {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.firestore();
+        } catch (error) {
+            showError('Ошибка инициализации Firebase: ' + error.message);
+            throw error;
+        }
+
+        let currentUser = null;
+        let users = [];
+        let moderationMessages = [];
+
+        // Загрузка пользователей
+        async function loadUsers() {
+            try {
+                const usersSnapshot = await db.collection('users').get();
+                users = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                return users;
+            } catch (error) {
+                showError('Ошибка загрузки пользователей: ' + error.message);
+                return [];
+            }
+        }
+
+        // Загрузка сообщений на модерации
+        async function loadModerationMessages() {
+            try {
+                const moderationSnapshot = await db.collection('moderation').where('status', '==', 'pending').get();
+                moderationMessages = moderationSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                return moderationMessages;
+            } catch (error) {
+                showError('Ошибка загрузки сообщений на модерации: ' + error.message);
+                return [];
+            }
+        }
+
+        // Рендеринг списка сообщений на модерации
+        async function renderModerationList() {
+            await loadModerationMessages();
+            const moderationList = document.getElementById('moderationList');
+            moderationList.innerHTML = moderationMessages.length === 0 ? '<p>Нет сообщений на модерации</p>' : '';
+            moderationMessages.forEach(msg => {
+                const item = document.createElement('div');
+                item.className = 'moderation-item';
+                item.innerHTML = `
+                    <p><strong>Отправитель:</strong> ${msg.sender}</p>
+                    <p><strong>Получатель:</strong> ${msg.receiver}</p>
+                    <p><strong>Сообщение:</strong> ${msg.text}</p>
+                    <p><strong>Время:</strong> ${new Date(msg.timestamp).toLocaleString()}</p>
+                    <div>
+                        <button class="action-btn approve-btn" onclick="approveMessage('${msg.id}', '${msg.messageId}')">Одобрить</button>
+                        <button class="action-btn reject-btn" onclick="rejectMessage('${msg.id}', '${msg.messageId}')">Отклонить</button>
+                    </div>
+                `;
+                moderationList.appendChild(item);
+            });
+        }
+
+        // Рендеринг списка пользователей
+        async function renderUsersList() {
+            await loadUsers();
+            const usersList = document.getElementById('usersList');
+            usersList.innerHTML = users.length === 0 ? '<p>Нет пользователей</p>' : '';
+            users.forEach(user => {
+                if (user.role !== 'admin') { // Не показываем админов
+                    const item = document.createElement('div');
+                    item.className = 'user-item';
+                    item.innerHTML = `
+                        <p><strong>Логин:</strong> ${user.username}</p>
+                        <p><strong>Статус:</strong> ${user.isMuted ? 'Замучен' : 'Активен'}</p>
+                        <div>
+                            ${user.isMuted ?
+                                `<button class="action-btn unmute-btn" onclick="unmuteUser('${user.id}')">Снять мут</button>` :
+                                `<button class="action-btn mute-btn" onclick="muteUser('${user.id}')">Выдать мут</button>`}
+                        </div>
+                    `;
+                    usersList.appendChild(item);
+                }
+            });
+        }
+
+        // Одобрение сообщения
+        async function approveMessage(moderationId, messageId) {
+            try {
+                await db.collection('moderation').doc(moderationId).update({ status: 'approved' });
+                await db.collection('messages').doc(messageId).update({ isModerated: true, status: 'approved' });
+                showError('Сообщение одобрено');
+                renderModerationList();
+            } catch (error) {
+                showError('Ошибка одобрения сообщения: ' + error.message);
+            }
+        }
+
+        // Отклонение сообщения
+        async function rejectMessage(moderationId, messageId) {
+            try {
+                await db.collection('moderation').doc(moderationId).update({ status: 'rejected' });
+                await db.collection('messages').doc(messageId).update({ isModerated: true, status: 'rejected' });
+                showError('Сообщение отклонено');
+                renderModerationList();
+            } catch (error) {
+                showError('Ошибка отклонения сообщения: ' + error.message);
+            }
+        }
+
+        // Выдача мута пользователю
+        async function muteUser(userId) {
+            try {
+                await db.collection('users').doc(userId).update({ isMuted: true });
+                showError('Пользователь замучен');
+                renderUsersList();
+            } catch (error) {
+                showError('Ошибка выдачи мута: ' + error.message);
+            }
+        }
+
+        // Снятие мута с пользователя
+        async function unmuteUser(userId) {
+            try {
+                await db.collection('users').doc(userId).update({ isMuted: false });
+                showError('Мут снят');
+                renderUsersList();
+            } catch (error) {
+                showError('Ошибка снятия мута: ' + error.message);
+            }
+        }
+
+        // Переключение вкладок
+        function openTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            document.querySelector(`button[onclick="openTab('${tabId}')"]`).classList.add('active');
+
+            if (tabId === 'moderationTab') {
+                renderModerationList();
+            } else if (tabId === 'usersTab') {
+                renderUsersList();
+            }
+        }
+
+        // Выход из аккаунта
+        function logout() {
+            localStorage.removeItem('currentUser');
+            window.location.href = 'index.html';
+        }
+
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', async () => {
+            currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (!currentUser) {
+                showError('Ошибка авторизации');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            await loadUsers();
+            const userExists = users.find(u => u.username === currentUser.username);
+            if (!userExists) {
+                showError('Пользователь не найден');
+                localStorage.removeItem('currentUser');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            currentUser = userExists;
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+
+            if (currentUser.role !== 'admin') {
+                showError('Доступ запрещён');
+                window.location.href = 'profile.html';
+                return;
+            }
+
+            renderModerationList();
+            renderUsersList();
+        });
+    </script>
+</body>
+</html>
