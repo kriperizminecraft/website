@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <title>Авторизация</title>
+    <title>Авторизация и регистрация</title>
     <!-- Firebase SDK (версия 8.10.1 для UMD-совместимости) -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -46,7 +46,7 @@
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
-        .auth-form {
+        .auth-form, .register-form {
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
@@ -77,6 +77,17 @@
             outline: none;
             border-color: var(--primary, #ff6b6b);
             background: rgba(255, 255, 255, 0.1);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        input[type="checkbox"] {
+            width: 1rem;
+            height: 1rem;
         }
 
         .btn {
@@ -190,7 +201,7 @@
     </style>
 </head>
 <body>
-    <section class="auth-container">
+    <section class="auth-container" id="authSection">
         <h2 class="title">Авторизация</h2>
         <div class="error-message" id="errorMessage"></div>
         <form class="auth-form" id="authForm">
@@ -201,12 +212,43 @@
             <div class="form-group password-toggle">
                 <label for="password">Пароль</label>
                 <input type="password" id="password" required placeholder="Введите пароль">
-                <span class="toggle-icon" onclick="togglePassword()">👁️</span>
+                <span class="toggle-icon" onclick="togglePassword('password')">👁️</span>
             </div>
             <button type="submit" class="btn">Войти</button>
         </form>
         <a class="link" onclick="showForgotPasswordModal()">Забыли пароль?</a>
-        <a class="link" href="register.html">Нет аккаунта? Зарегистрируйтесь</a>
+        <a class="link" onclick="showRegisterForm()">Нет аккаунта? Зарегистрируйтесь</a>
+    </section>
+
+    <section class="auth-container" id="registerSection" style="display: none;">
+        <h2 class="title">Регистрация</h2>
+        <div class="error-message" id="registerErrorMessage"></div>
+        <form class="register-form" id="registerForm">
+            <div class="form-group">
+                <label for="regUsername">Логин</label>
+                <input type="text" id="regUsername" required placeholder="Введите логин">
+            </div>
+            <div class="form-group">
+                <label for="regEmail">Email</label>
+                <input type="email" id="regEmail" required placeholder="Введите email">
+            </div>
+            <div class="form-group password-toggle">
+                <label for="regPassword">Пароль</label>
+                <input type="password" id="regPassword" required placeholder="Введите пароль">
+                <span class="toggle-icon" onclick="togglePassword('regPassword')">👁️</span>
+            </div>
+            <div class="form-group password-toggle">
+                <label for="confirmPassword">Подтвердите пароль</label>
+                <input type="password" id="confirmPassword" required placeholder="Подтвердите пароль">
+                <span class="toggle-icon" onclick="togglePassword('confirmPassword')">👁️</span>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="isEmailPrivate">
+                <label for="isEmailPrivate">Скрыть email</label>
+            </div>
+            <button type="submit" class="btn">Зарегистрироваться</button>
+        </form>
+        <a class="link" onclick="showAuthForm()">Уже есть аккаунт? Войдите</a>
     </section>
 
     <!-- Модальное окно для восстановления пароля -->
@@ -242,8 +284,8 @@
         })();
 
         // Функция для отображения ошибки на странице
-        function showError(message, isModal = false) {
-            const error = isModal ? document.getElementById('modalErrorMessage') : document.getElementById('errorMessage');
+        function showError(message, elementId = 'errorMessage') {
+            const error = document.getElementById(elementId);
             error.textContent = message;
             error.style.display = 'block';
             setTimeout(() => error.style.display = 'none', 3000);
@@ -297,30 +339,92 @@
             }
         }
 
-        // Сохранение пользователей в Firestore
-        async function saveUsers(usersToSave) {
+        // Сохранение пользователя в Firestore
+        async function saveUser(user) {
             if (!db) {
                 showError('База данных не инициализирована.');
                 throw new Error('Firestore not initialized');
             }
             try {
-                const batch = db.batch();
-                usersToSave.forEach(user => {
-                    const userRef = user.id ? db.collection('users').doc(user.id) : db.collection('users').doc();
-                    if (!user.id) user.id = userRef.id;
-                    batch.set(userRef, user);
-                });
-                await batch.commit();
-                users = await loadUsers();
+                const userRef = db.collection('users').doc();
+                user.id = userRef.id;
+                await userRef.set(user);
+                users.push(user);
             } catch (error) {
-                console.error('Ошибка сохранения пользователей:', error.message);
-                showError('Ошибка сохранения данных.');
+                console.error('Ошибка сохранения пользователя:', error.message);
+                showError('Ошибка сохранения данных: ' + error.message);
+                throw error;
+            }
+        }
+
+        // Сохранение временного пользователя в Firestore (pendingUsers)
+        async function savePendingUser(user, token) {
+            if (!db) {
+                showError('База данных не инициализирована.');
+                throw new Error('Firestore not initialized');
+            }
+            try {
+                const pendingUser = {
+                    ...user,
+                    token: token,
+                    createdAt: Date.now(),
+                    expiresAt: Date.now() + 24 * 60 * 60 * 1000 // 24 часа на подтверждение
+                };
+                await db.collection('pendingUsers').doc(token).set(pendingUser);
+            } catch (error) {
+                console.error('Ошибка сохранения временного пользователя:', error.message);
+                showError('Ошибка сохранения данных: ' + error.message);
+                throw error;
+            }
+        }
+
+        // Подтверждение регистрации
+        async function confirmRegistration(token) {
+            if (!db) {
+                showError('База данных не инициализирована.');
+                return;
+            }
+            try {
+                const pendingUserDoc = await db.collection('pendingUsers').doc(token).get();
+                if (!pendingUserDoc.exists) {
+                    showError('Недействительная или истёкшая ссылка для подтверждения.');
+                    return;
+                }
+
+                const pendingUser = pendingUserDoc.data();
+                const currentTime = Date.now();
+
+                if (currentTime > pendingUser.expiresAt) {
+                    await db.collection('pendingUsers').doc(token).delete();
+                    showError('Срок действия ссылки истёк. Пожалуйста, зарегистрируйтесь заново.');
+                    return;
+                }
+
+                const newUser = {
+                    username: pendingUser.username,
+                    email: pendingUser.email,
+                    password: pendingUser.password,
+                    role: 'user',
+                    avatar: '',
+                    isEmailPrivate: pendingUser.isEmailPrivate,
+                    isBlocked: false
+                };
+
+                await saveUser(newUser);
+                await db.collection('pendingUsers').doc(token).delete();
+
+                showError('Регистрация успешно подтверждена! Теперь вы можете войти.');
+                window.history.replaceState(null, '', 'index.html'); // Удаляем токен из URL
+                showAuthForm();
+            } catch (error) {
+                console.error('Ошибка подтверждения регистрации:', error.message);
+                showError('Ошибка подтверждения регистрации: ' + error.message);
             }
         }
 
         // Показать/Скрыть пароль
-        function togglePassword() {
-            const passwordInput = document.getElementById('password');
+        function togglePassword(fieldId) {
+            const passwordInput = document.getElementById(fieldId);
             const icon = passwordInput.nextElementSibling;
             if (passwordInput.type === 'password') {
                 passwordInput.type = 'text';
@@ -329,6 +433,17 @@
                 passwordInput.type = 'password';
                 icon.textContent = '👁️';
             }
+        }
+
+        // Переключение между формами
+        function showAuthForm() {
+            document.getElementById('authSection').style.display = 'block';
+            document.getElementById('registerSection').style.display = 'none';
+        }
+
+        function showRegisterForm() {
+            document.getElementById('authSection').style.display = 'none';
+            document.getElementById('registerSection').style.display = 'block';
         }
 
         // Показать модальное окно
@@ -350,59 +465,45 @@
             resetEmail = null;
         }
 
-        // Отправка кода подтверждения на email
+        // Отправка кода подтверждения на email (для сброса пароля)
         async function sendResetCode() {
-            // Убедимся, что пользователи загружены
             if (users.length === 0) {
                 await loadUsers();
             }
 
             const email = document.getElementById('emailInput').value.trim();
             if (!email) {
-                showError('Введите email', true);
+                showError('Введите email', 'modalErrorMessage');
                 return;
             }
 
-            // Дополнительная проверка формата email
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(email)) {
-                showError('Некорректный формат email', true);
+                showError('Некорректный формат email', 'modalErrorMessage');
                 return;
             }
 
             const user = users.find(u => u.email === email);
             if (!user) {
-                showError('Пользователь с таким email не найден', true);
+                showError('Пользователь с таким email не найден', 'modalErrorMessage');
                 return;
             }
 
-            // Генерация случайного 6-значного кода
             resetCode = Math.floor(100000 + Math.random() * 900000).toString();
             resetEmail = email;
 
-            // Логирование для отладки
-            console.log('Отправка email:', {
-                service_id: 'service_w3a4hvv',
-                template_id: 'template_bhp4ane',
-                to_email: email,
-                reset_code: resetCode,
-                user_name: user.username
-            });
-
-            // Отправка email через EmailJS
             try {
-                const response = await emailjs.send('service_w3a4hvv', 'template_bhp4ane', {
+                await emailjs.send('service_w3a4hvv', 'template_reset_password', {
                     to_email: email,
                     reset_code: resetCode,
                     user_name: user.username
                 });
-                console.log('Email отправлен:', response);
-                showError('Код отправлен на ваш email', true);
+                showError('Код отправлен на ваш email', 'modalErrorMessage');
                 document.getElementById('emailStep').style.display = 'none';
                 document.getElementById('codeStep').style.display = 'block';
             } catch (error) {
                 console.error('Ошибка отправки email:', error);
-                showError(`Ошибка отправки кода: ${error.text || error.message}`, true);
+                showError(`Ошибка отправки кода: ${error.text || error.message}`, 'modalErrorMessage');
             }
         }
 
@@ -410,7 +511,7 @@
         function verifyCode() {
             const codeInput = document.getElementById('codeInput').value.trim();
             if (codeInput !== resetCode) {
-                showError('Неверный код', true);
+                showError('Неверный код', 'modalErrorMessage');
                 return;
             }
             document.getElementById('codeStep').style.display = 'none';
@@ -423,23 +524,23 @@
             const confirmPassword = document.getElementById('confirmPasswordInput').value.trim();
 
             if (newPassword !== confirmPassword) {
-                showError('Пароли не совпадают', true);
+                showError('Пароли не совпадают', 'modalErrorMessage');
                 return;
             }
 
             if (newPassword.length < 6) {
-                showError('Пароль должен содержать минимум 6 символов', true);
+                showError('Пароль должен содержать минимум 6 символов', 'modalErrorMessage');
                 return;
             }
 
             const user = users.find(u => u.email === resetEmail);
             if (user) {
                 user.password = newPassword;
-                await saveUsers([user]);
-                showError('Пароль успешно изменён', true);
+                await db.collection('users').doc(user.id).set(user);
+                showError('Пароль успешно изменён', 'modalErrorMessage');
                 setTimeout(closeModal, 2000);
             } else {
-                showError('Ошибка: пользователь не найден', true);
+                showError('Ошибка: пользователь не найден', 'modalErrorMessage');
             }
             resetCode = null;
             resetEmail = null;
@@ -470,11 +571,94 @@
             window.location.href = 'profile.html';
         });
 
-        // Проверка, если пользователь уже авторизован, и загрузка пользователей
-        document.addEventListener('DOMContentLoaded', async function() {
-            // Загружаем пользователей сразу при загрузке страницы
+        // Обработка отправки формы регистрации
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
             await loadUsers();
 
+            const username = document.getElementById('regUsername').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const password = document.getElementById('regPassword').value.trim();
+            const confirmPassword = document.getElementById('confirmPassword').value.trim();
+            const isEmailPrivate = document.getElementById('isEmailPrivate').checked;
+
+            if (!username || !email || !password || !confirmPassword) {
+                showError('Все поля обязательны для заполнения', 'registerErrorMessage');
+                return;
+            }
+
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showError('Некорректный формат email', 'registerErrorMessage');
+                return;
+            }
+
+            if (password.length < 6) {
+                showError('Пароль должен содержать минимум 6 символов', 'registerErrorMessage');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                showError('Пароли не совпадают', 'registerErrorMessage');
+                return;
+            }
+
+            if (users.some(u => u.username === username)) {
+                showError('Пользователь с таким логином уже существует', 'registerErrorMessage');
+                return;
+            }
+
+            if (users.some(u => u.email === email)) {
+                showError('Email уже используется', 'registerErrorMessage');
+                return;
+            }
+
+            const pendingUser = {
+                username: username,
+                email: email,
+                password: password,
+                isEmailPrivate: isEmailPrivate
+            };
+
+            // Генерируем уникальный токен
+            const token = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substr(2, 9);
+
+            // Сохраняем временного пользователя
+            await savePendingUser(pendingUser, token);
+
+            // Формируем подтверждающую ссылку
+            const baseUrl = window.location.origin; // Например, https://your-app.netlify.app
+            const confirmationLink = `${baseUrl}/index.html?confirm=${token}`;
+
+            // Отправляем письмо через EmailJS с новым шаблоном
+            try {
+                await emailjs.send('service_w3a4hvv', 'template_confirm_registration', {
+                    to_email: email,
+                    user_name: username,
+                    confirmation_link: confirmationLink
+                });
+                showError('Письмо с подтверждением отправлено на ваш email. Пожалуйста, проверьте почту.', 'registerErrorMessage');
+            } catch (error) {
+                console.error('Ошибка отправки email:', error);
+                showError(`Ошибка отправки письма: ${error.text || error.message}`, 'registerErrorMessage');
+                await db.collection('pendingUsers').doc(token).delete(); // Удаляем временного пользователя в случае ошибки
+            }
+        });
+
+        // Проверка, если пользователь уже авторизован, и обработка подтверждения
+        document.addEventListener('DOMContentLoaded', async function() {
+            await loadUsers();
+
+            // Проверяем, есть ли токен подтверждения в URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get('confirm');
+            if (token) {
+                await confirmRegistration(token);
+                return;
+            }
+
+            // Проверяем, авторизован ли пользователь
             const userData = localStorage.getItem('currentUser');
             if (userData) {
                 currentUser = JSON.parse(userData);
