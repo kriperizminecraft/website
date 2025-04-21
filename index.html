@@ -10,6 +10,8 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <!-- EmailJS SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <!-- CryptoJS для шифрования -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -283,6 +285,30 @@
             emailjs.init("fOU587HClWretq8_w");
         })();
 
+        // Ключ шифрования (В продакшене храните его безопасно!)
+        const ENCRYPTION_KEY = "my-secret-key-1234567890abcdef"; // Замените на свой ключ
+
+        // Функция шифрования данных
+        function encryptData(data) {
+            try {
+                return CryptoJS.AES.encrypt(data, ENCRYPTION_KEY).toString();
+            } catch (error) {
+                console.error('Ошибка шифрования:', error);
+                return null;
+            }
+        }
+
+        // Функция расшифровки данных
+        function decryptData(encryptedData) {
+            try {
+                const bytes = CryptoJS.AES.decrypt(encryptedData, ENCRYPTION_KEY);
+                return bytes.toString(CryptoJS.enc.Utf8);
+            } catch (error) {
+                console.error('Ошибка расшифровки:', error);
+                return null;
+            }
+        }
+
         // Функция для отображения ошибки на странице
         function showError(message, elementId = 'errorMessage') {
             const error = document.getElementById(elementId);
@@ -321,6 +347,7 @@
         let currentUser = null;
         let resetCode = null;
         let resetEmail = null;
+        let resetCodeExpiresAt = null;
 
         // Загрузка пользователей из Firestore
         async function loadUsers() {
@@ -330,7 +357,19 @@
             }
             try {
                 const usersSnapshot = await db.collection('users').get();
-                users = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                users = usersSnapshot.docs.map(doc => {
+                    const data = doc.data();
+                    return {
+                        id: doc.id,
+                        username: data.username,
+                        email: decryptData(data.email), // Расшифровываем email
+                        password: decryptData(data.password), // Расшифровываем пароль
+                        role: data.role,
+                        avatar: data.avatar,
+                        isEmailPrivate: data.isEmailPrivate,
+                        isBlocked: data.isBlocked
+                    };
+                });
                 return users;
             } catch (error) {
                 console.error('Ошибка загрузки пользователей:', error.message);
@@ -346,9 +385,24 @@
                 throw new Error('Firestore not initialized');
             }
             try {
+                const encryptedEmail = encryptData(user.email);
+                const encryptedPassword = encryptData(user.password);
+                if (!encryptedEmail || !encryptedPassword) {
+                    throw new Error('Ошибка шифрования данных');
+                }
+
                 const userRef = db.collection('users').doc();
+                const userToSave = {
+                    username: user.username,
+                    email: encryptedEmail, // Сохраняем зашифрованный email
+                    password: encryptedPassword, // Сохраняем зашифрованный пароль
+                    role: user.role || 'user',
+                    avatar: user.avatar || '',
+                    isEmailPrivate: user.isEmailPrivate || false,
+                    isBlocked: user.isBlocked || false
+                };
+                await userRef.set(userToSave);
                 user.id = userRef.id;
-                await userRef.set(user);
                 users.push(user);
             } catch (error) {
                 console.error('Ошибка сохранения пользователя:', error.message);
@@ -364,8 +418,17 @@
                 throw new Error('Firestore not initialized');
             }
             try {
+                const encryptedEmail = encryptData(user.email);
+                const encryptedPassword = encryptData(user.password);
+                if (!encryptedEmail || !encryptedPassword) {
+                    throw new Error('Ошибка шифрования данных');
+                }
+
                 const pendingUser = {
-                    ...user,
+                    username: user.username,
+                    email: encryptedEmail, // Сохраняем зашифрованный email
+                    password: encryptedPassword, // Сохраняем зашифрованный пароль
+                    isEmailPrivate: user.isEmailPrivate,
                     token: token,
                     createdAt: Date.now(),
                     expiresAt: Date.now() + 24 * 60 * 60 * 1000 // 24 часа на подтверждение
@@ -391,22 +454,29 @@
                     return;
                 }
 
-                const pendingUser = pendingUserDoc.data();
+                const pendingUserData = pendingUserDoc.data();
                 const currentTime = Date.now();
 
-                if (currentTime > pendingUser.expiresAt) {
+                if (currentTime > pendingUserData.expiresAt) {
                     await db.collection('pendingUsers').doc(token).delete();
                     showError('Срок действия ссылки истёк. Пожалуйста, зарегистрируйтесь заново.');
                     return;
                 }
 
+                const decryptedEmail = decryptData(pendingUserData.email);
+                const decryptedPassword = decryptData(pendingUserData.password);
+                if (!decryptedEmail || !decryptedPassword) {
+                    showError('Ошибка расшифровки данных пользователя.');
+                    return;
+                }
+
                 const newUser = {
-                    username: pendingUser.username,
-                    email: pendingUser.email,
-                    password: pendingUser.password,
+                    username: pendingUserData.username,
+                    email: decryptedEmail,
+                    password: decryptedPassword,
                     role: 'user',
                     avatar: '',
-                    isEmailPrivate: pendingUser.isEmailPrivate,
+                    isEmailPrivate: pendingUserData.isEmailPrivate,
                     isBlocked: false
                 };
 
@@ -463,6 +533,7 @@
             document.getElementById('forgotPasswordModal').style.display = 'none';
             resetCode = null;
             resetEmail = null;
+            resetCodeExpiresAt = null;
         }
 
         // Отправка кода подтверждения на email (для сброса пароля)
@@ -491,9 +562,10 @@
 
             resetCode = Math.floor(100000 + Math.random() * 900000).toString();
             resetEmail = email;
+            resetCodeExpiresAt = Date.now() + 15 * 60 * 1000; // Код действителен 15 минут
 
             try {
-                await emailjs.send('service_w3a4hvv', 'template_bhp4ane', {
+                await emailjs.send('service_w3a4hvv', 'template_reset_password', {
                     to_email: email,
                     reset_code: resetCode,
                     user_name: user.username
@@ -510,6 +582,15 @@
         // Проверка кода подтверждения
         function verifyCode() {
             const codeInput = document.getElementById('codeInput').value.trim();
+            if (Date.now() > resetCodeExpiresAt) {
+                showError('Код истёк. Пожалуйста, запросите новый.', 'modalErrorMessage');
+                resetCode = null;
+                resetEmail = null;
+                resetCodeExpiresAt = null;
+                document.getElementById('codeStep').style.display = 'none';
+                document.getElementById('emailStep').style.display = 'block';
+                return;
+            }
             if (codeInput !== resetCode) {
                 showError('Неверный код', 'modalErrorMessage');
                 return;
@@ -536,7 +617,14 @@
             const user = users.find(u => u.email === resetEmail);
             if (user) {
                 user.password = newPassword;
-                await db.collection('users').doc(user.id).set(user);
+                const encryptedPassword = encryptData(newPassword);
+                if (!encryptedPassword) {
+                    showError('Ошибка шифрования нового пароля', 'modalErrorMessage');
+                    return;
+                }
+                await db.collection('users').doc(user.id).update({
+                    password: encryptedPassword
+                });
                 showError('Пароль успешно изменён', 'modalErrorMessage');
                 setTimeout(closeModal, 2000);
             } else {
@@ -544,6 +632,7 @@
             }
             resetCode = null;
             resetEmail = null;
+            resetCodeExpiresAt = null;
         }
 
         // Обработка отправки формы авторизации
@@ -633,7 +722,7 @@
 
             // Отправляем письмо через EmailJS с новым шаблоном
             try {
-                await emailjs.send('service_w3a4hvv', 'template_bwvu2og', {
+                await emailjs.send('service_w3a4hvv', 'template_confirm_registration', {
                     to_email: email,
                     user_name: username,
                     confirmation_link: confirmationLink
